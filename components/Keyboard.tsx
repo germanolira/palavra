@@ -89,6 +89,8 @@ function KeyButton({
       >
         {label === "DEL" ? (
           <MaterialCommunityIcons name="backspace-outline" size={18} color={theme.text} />
+        ) : label === "ENTER" ? (
+          <MaterialCommunityIcons name="keyboard-return" size={18} color={theme.text} />
         ) : (
           <Text style={[styles.keyText, { fontSize }]}>{label}</Text>
         )}

@@ -38,32 +38,33 @@ export default function GameOverModal({
   return (
     <BottomSheetModal
       visible
-      title={won ? "Voce venceu" : "Fim de jogo"}
+      title={won ? "Você venceu!" : "Fim de jogo"}
       theme={theme}
       hapticsEnabled={hapticsEnabled}
       dismissible={false}
+      footer={
+        <Pressable onPress={onRestart} style={styles.primaryButton} accessibilityRole="button">
+          <Text style={styles.primaryButtonText}>Próxima rodada</Text>
+        </Pressable>
+      }
     >
       <View style={styles.modalHeader}>
         <Text style={styles.gameOverEmoji}>{won ? "🎉" : "😢"}</Text>
       </View>
 
       <View style={styles.sectionCard}>
-        <Text style={styles.modalText}>
+        <Text style={[styles.modalText, { textAlign: "center" }]}>
           {won
-            ? "Parabens! Voce encontrou a palavra certa."
+            ? "Parabéns! Você encontrou a palavra certa."
             : "A rodada terminou. A resposta era:"}
         </Text>
         <Text style={styles.gameOverWord}>{target}</Text>
-        <Text style={styles.rowDescription}>
+        <Text style={[styles.rowDescription, { textAlign: "center" }]}>
           {won
-            ? "Continue tentando amanha para manter sua sequencia!"
-            : "Nao desista, tente novamente amanha com uma nova palavra!"}
+            ? "Continue jogando amanhã para manter sua sequência!"
+            : "Não desista, tente novamente amanhã com uma nova palavra!"}
         </Text>
       </View>
-
-      <Pressable onPress={onRestart} style={styles.primaryButtonLarge} accessibilityRole="button">
-        <Text style={styles.primaryButtonLargeText}>Proxima rodada</Text>
-      </Pressable>
     </BottomSheetModal>
   );
 }

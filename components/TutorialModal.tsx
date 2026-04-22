@@ -32,8 +32,10 @@ function ExampleCard({
       <View style={[styles.exampleTile, { backgroundColor }]}>
         <Text style={styles.exampleTileText}>{letter}</Text>
       </View>
-      <Text style={styles.exampleLabel}>{label}</Text>
-      <Text style={[styles.rowDescription, { textAlign: "center" }]}>{description}</Text>
+      <View style={styles.exampleTextContent}>
+        <Text style={styles.exampleLabel}>{label}</Text>
+        <Text style={styles.rowDescription}>{description}</Text>
+      </View>
     </View>
   );
 }
@@ -53,10 +55,15 @@ export default function TutorialModal({
       title="Como jogar"
       theme={theme}
       hapticsEnabled={hapticsEnabled}
+      footer={
+        <Pressable onPress={onClose} style={styles.primaryButton} accessibilityRole="button">
+          <Text style={styles.primaryButtonText}>Entendi</Text>
+        </Pressable>
+      }
     >
       <View style={styles.sectionCard}>
         <Text style={styles.modalText}>
-          Descubra a palavra do dia em ate 6 tentativas. Cada palpite precisa ter 5 letras validas.
+          Descubra a palavra do dia em até 6 tentativas. Cada palpite precisa ter 5 letras válidas.
         </Text>
       </View>
 
@@ -64,21 +71,21 @@ export default function TutorialModal({
         <ExampleCard
           letter="P"
           label="Correta"
-          description="A letra existe e esta na posicao certa."
+          description="A letra existe e está na posição certa."
           backgroundColor={theme.success}
           theme={theme}
         />
         <ExampleCard
           letter="R"
           label="Presente"
-          description="A letra existe, mas fica em outra posicao."
+          description="A letra existe, mas fica em outra posição."
           backgroundColor={theme.warning}
           theme={theme}
         />
         <ExampleCard
           letter="A"
           label="Ausente"
-          description="A letra nao faz parte da palavra."
+          description="A letra não faz parte da palavra."
           backgroundColor={theme.tileAbsent}
           theme={theme}
         />
@@ -87,15 +94,11 @@ export default function TutorialModal({
       <View style={styles.sectionCard}>
         <Text style={styles.sectionTitle}>Dicas</Text>
         <View style={styles.bulletBlock}>
-          <Text style={styles.bulletText}>Use as cores do tabuleiro para ajustar o proximo palpite.</Text>
-          <Text style={styles.bulletText}>As teclas tambem mudam de cor para mostrar o melhor estado de cada letra.</Text>
-          <Text style={styles.bulletText}>Tente abrir com vogais e consoantes comuns para ganhar informacao cedo.</Text>
+          <Text style={styles.bulletText}>• Use as cores do tabuleiro para ajustar o próximo palpite.</Text>
+          <Text style={styles.bulletText}>• As teclas também mudam de cor para mostrar o melhor estado de cada letra.</Text>
+          <Text style={styles.bulletText}>• Tente abrir com vogais e consoantes comuns para ganhar informação cedo.</Text>
         </View>
       </View>
-
-      <Pressable onPress={onClose} style={styles.primaryButton} accessibilityRole="button">
-        <Text style={styles.primaryButtonText}>Entendi</Text>
-      </Pressable>
     </BottomSheetModal>
   );
 }

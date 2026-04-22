@@ -1,5 +1,6 @@
 import React from "react";
-import { Pressable, Text, View } from "react-native";
+import { Pressable, ScrollView, Text, View, useWindowDimensions } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Animated, {
   interpolate,
   useAnimatedStyle,
@@ -34,6 +35,8 @@ export default function BottomSheetModal({
 }: BottomSheetModalProps) {
   const styles = React.useMemo(() => createAppStyles(theme), [theme]);
   const progress = useSharedValue(0);
+  const insets = useSafeAreaInsets();
+  const { height: screenHeight } = useWindowDimensions();
 
   React.useEffect(() => {
     progress.value = withTiming(visible ? 1 : 0, { duration: 260 });
@@ -48,7 +51,7 @@ export default function BottomSheetModal({
     opacity: progress.value,
     transform: [
       {
-        translateY: interpolate(progress.value, [0, 1], [260, 0]),
+        translateY: interpolate(progress.value, [0, 1], [600, 0]),
       },
     ],
   }));
@@ -69,6 +72,8 @@ export default function BottomSheetModal({
     onClose();
   };
 
+  const maxHeight = screenHeight - insets.top - 20;
+
   return (
     <Animated.View style={[styles.sheetOverlay, overlayStyle]}>
       <Pressable
@@ -77,7 +82,16 @@ export default function BottomSheetModal({
         accessibilityRole="button"
         accessibilityLabel="Fechar modal"
       />
-      <Animated.View style={[styles.sheet, sheetStyle]}>
+      <Animated.View
+        style={[
+          styles.sheet,
+          sheetStyle,
+          {
+            maxHeight,
+            paddingBottom: Math.max(24, insets.bottom),
+          },
+        ]}
+      >
         <View style={styles.sheetHandle} />
         <View style={styles.sheetHeader}>
           <Text style={styles.sheetTitle}>{title}</Text>
@@ -94,7 +108,16 @@ export default function BottomSheetModal({
             <View style={styles.iconButtonSpacer} />
           )}
         </View>
-        <View style={styles.sheetContent}>{children}</View>
+        
+        <ScrollView 
+          showsVerticalScrollIndicator={false}
+          style={styles.sheetScrollView}
+          contentContainerStyle={styles.sheetContent}
+          bounces={false}
+        >
+          {children}
+        </ScrollView>
+        
         {footer ? <View style={styles.sheetFooter}>{footer}</View> : null}
       </Animated.View>
     </Animated.View>

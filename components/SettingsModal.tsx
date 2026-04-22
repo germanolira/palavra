@@ -77,12 +77,26 @@ export default function SettingsModal({
     <BottomSheetModal
       visible={visible}
       onClose={onClose}
-      title="Configuracoes"
+      title="Configurações"
       theme={theme}
       hapticsEnabled={hapticsEnabled}
+      footer={
+        <>
+          <Pressable
+            onPress={onClearLocalData}
+            style={styles.dangerButton}
+            accessibilityRole="button"
+          >
+            <Text style={styles.dangerButtonText}>Limpar dados</Text>
+          </Pressable>
+          <Pressable onPress={onClose} style={styles.secondaryButton} accessibilityRole="button">
+            <Text style={styles.secondaryButtonText}>Fechar</Text>
+          </Pressable>
+        </>
+      }
     >
       <View style={styles.sectionCard}>
-        <Text style={styles.sectionTitle}>Aparencia</Text>
+        <Text style={styles.sectionTitle}>Aparência</Text>
         <SettingRow
           label="Modo escuro"
           description="Usa a nova paleta noturna com contraste mais suave e elegante."
@@ -96,40 +110,29 @@ export default function SettingsModal({
         <Text style={styles.sectionTitle}>Feedback</Text>
         <SettingRow
           label="Haptics"
-          description="Adiciona resposta tactil ao tocar no teclado e nas acoes do jogo."
+          description="Adiciona resposta tátil ao tocar no teclado e nas ações do jogo."
           value={hapticsEnabled}
           onValueChange={onHapticsChange}
           theme={theme}
         />
       </View>
 
-      <View style={styles.sectionCard}>
-        <Text style={styles.sectionTitle}>Debug</Text>
-        <SettingRow
-          label="Debug mode"
-          description="Mostra a data ativa e a resposta atual para facilitar os testes."
-          value={debugMode}
-          onValueChange={onDebugModeChange}
-          theme={theme}
-        />
-        <View style={styles.metaBlock}>
-          <Text style={styles.rowDescription}>{`Calendario local: ${dailySeedBaseDate} ate ${dailySeedFinalDate}`}</Text>
-          <Text style={styles.rowDescription}>{`Data carregada agora: ${activeDate || dailySeedBaseDate}`}</Text>
+      {__DEV__ && (
+        <View style={styles.sectionCard}>
+          <Text style={styles.sectionTitle}>Debug</Text>
+          <SettingRow
+            label="Debug mode"
+            description="Mostra a data ativa e a resposta atual para facilitar os testes."
+            value={debugMode}
+            onValueChange={onDebugModeChange}
+            theme={theme}
+          />
+          <View style={styles.metaBlock}>
+            <Text style={styles.rowDescription}>{`Calendário local: ${dailySeedBaseDate} até ${dailySeedFinalDate}`}</Text>
+            <Text style={styles.rowDescription}>{`Data carregada agora: ${activeDate || dailySeedBaseDate}`}</Text>
+          </View>
         </View>
-      </View>
-
-      <View style={styles.buttonRow}>
-        <Pressable
-          onPress={onClearLocalData}
-          style={styles.dangerButton}
-          accessibilityRole="button"
-        >
-          <Text style={styles.dangerButtonText}>Clear dados</Text>
-        </Pressable>
-        <Pressable onPress={onClose} style={styles.secondaryButton} accessibilityRole="button">
-          <Text style={styles.secondaryButtonText}>Fechar</Text>
-        </Pressable>
-      </View>
+      )}
     </BottomSheetModal>
   );
 }
