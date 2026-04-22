@@ -1,11 +1,12 @@
 import { WORD_LENGTH } from '../constants/words';
+import type { TileState } from '../types';
 
-export function normalize(text) {
+export function normalize(text: string): string {
   return text.toUpperCase().replace(/[^A-Z]/g, '').slice(0, WORD_LENGTH);
 }
 
-export function evaluateGuess(guess, target) {
-  const res = Array(WORD_LENGTH).fill('absent');
+export function evaluateGuess(guess: string, target: string): TileState[] {
+  const res: TileState[] = Array(WORD_LENGTH).fill('absent');
   const targetArr = target.split('');
   const used = Array(WORD_LENGTH).fill(false);
 
@@ -28,10 +29,10 @@ export function evaluateGuess(guess, target) {
   return res;
 }
 
-export function getRandomWord(words) {
+export function getRandomWord(words: string[]): string {
   return words[Math.floor(Math.random() * words.length)];
 }
 
-export function isValidWord(word, words) {
+export function isValidWord(word: string, words: string[]): boolean {
   return words.includes(word.toUpperCase());
 }

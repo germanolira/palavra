@@ -8,4 +8,4 @@ export const PALETTE = {
   primary: '#476344',
   primaryContainer: '#5f7c5b',
   secondaryContainer: '#fec178',
-};
+} as const;
