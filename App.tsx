@@ -307,7 +307,7 @@ export default function App() {
   if (!fontsLoaded || !gameReady) {
     return (
       <SafeAreaView style={styles.center}>
-        <ActivityIndicator size="large" color={theme.primary} />
+        <ActivityIndicator size="large" color={theme.colorCorrect} />
       </SafeAreaView>
     );
   }
@@ -326,7 +326,7 @@ export default function App() {
             <MaterialCommunityIcons
               name="tune-variant"
               size={20}
-              color={theme.text}
+              color={theme.textMain}
             />
           </Pressable>
         </View>
@@ -343,7 +343,7 @@ export default function App() {
             <MaterialCommunityIcons
               name="help-circle-outline"
               size={20}
-              color={theme.text}
+              color={theme.textMain}
             />
           </Pressable>
         </View>

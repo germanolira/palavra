@@ -88,9 +88,9 @@ function KeyButton({
         accessibilityRole="button"
       >
         {label === "DEL" ? (
-          <MaterialCommunityIcons name="backspace-outline" size={18} color={theme.text} />
+          <MaterialCommunityIcons name="backspace-outline" size={18} color={theme.textMain} />
         ) : label === "ENTER" ? (
-          <MaterialCommunityIcons name="keyboard-return" size={18} color={theme.text} />
+          <MaterialCommunityIcons name="keyboard-return" size={18} color={theme.textMain} />
         ) : (
           <Text style={[styles.keyText, { fontSize }]}>{label}</Text>
         )}

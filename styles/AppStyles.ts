@@ -6,17 +6,17 @@ export function createAppStyles(theme: AppTheme) {
   return StyleSheet.create({
     container: {
       flex: 1,
-      backgroundColor: theme.background,
+      backgroundColor: theme.bgBase,
       paddingTop: 12,
     },
     center: {
       flex: 1,
       justifyContent: "center",
       alignItems: "center",
-      backgroundColor: theme.background,
+      backgroundColor: theme.bgBase,
     },
     loadingIndicator: {
-      color: theme.primary,
+      color: theme.colorCorrect,
     },
 
     header: {
@@ -41,7 +41,7 @@ export function createAppStyles(theme: AppTheme) {
       width: 40,
       height: 40,
       borderRadius: 20,
-      backgroundColor: theme.surfaceElevated,
+      backgroundColor: theme.bgSurface,
       borderWidth: 0,
       justifyContent: "center",
       alignItems: "center",
@@ -49,7 +49,7 @@ export function createAppStyles(theme: AppTheme) {
     iconButtonText: {
       fontFamily: "BeVietnamPro_700Bold",
       fontSize: 15,
-      color: theme.text,
+      color: theme.textMain,
     },
     iconButtonSpacer: {
       width: 40,
@@ -73,32 +73,32 @@ export function createAppStyles(theme: AppTheme) {
       justifyContent: "center",
       alignItems: "center",
       borderWidth: 1.5,
-      borderColor: theme.border,
-      backgroundColor: theme.tileEmpty,
+      borderColor: theme.borderBase,
+      backgroundColor: theme.bgSurface,
     },
     tileText: {
       fontFamily: "BeVietnamPro_700Bold",
-      color: theme.text,
+      color: theme.textMain,
     },
     correct: {
-      backgroundColor: theme.success,
-      borderColor: theme.success,
+      backgroundColor: theme.colorCorrect,
+      borderColor: theme.colorCorrect,
     },
     present: {
-      backgroundColor: theme.warning,
-      borderColor: theme.warning,
+      backgroundColor: theme.colorPresent,
+      borderColor: theme.colorPresent,
     },
     absent: {
-      backgroundColor: theme.tileAbsent,
-      borderColor: theme.tileAbsent,
+      backgroundColor: theme.colorAbsent,
+      borderColor: theme.colorAbsent,
     },
     active: {
-      backgroundColor: theme.tileActive,
-      borderColor: theme.borderStrong,
+      backgroundColor: theme.bgBase,
+      borderColor: theme.borderBase,
     },
     empty: {
-      backgroundColor: theme.tileEmpty,
-      borderColor: theme.border,
+      backgroundColor: theme.bgSurface,
+      borderColor: theme.borderBase,
     },
 
     bottomArea: {
@@ -113,37 +113,37 @@ export function createAppStyles(theme: AppTheme) {
       minHeight: 50,
     },
     key: {
-      backgroundColor: theme.keyboardIdle,
+      backgroundColor: theme.bgSurface,
       borderWidth: 1,
-      borderColor: theme.border,
+      borderColor: theme.borderBase,
       justifyContent: "center",
       alignItems: "center",
       flex: 1,
     },
     keySpecial: {
-      backgroundColor: theme.keyboardSpecial,
+      backgroundColor: theme.borderBase,
     },
     keyText: {
       fontFamily: "BeVietnamPro_600SemiBold",
-      color: theme.text,
+      color: theme.textMain,
     },
     keyCorrect: {
-      backgroundColor: theme.success,
-      borderColor: theme.success,
+      backgroundColor: theme.colorCorrect,
+      borderColor: theme.colorCorrect,
     },
     keyPresent: {
-      backgroundColor: theme.warning,
-      borderColor: theme.warning,
+      backgroundColor: theme.colorPresent,
+      borderColor: theme.colorPresent,
     },
     keyAbsent: {
-      backgroundColor: theme.keyboardAbsent,
-      borderColor: theme.keyboardAbsent,
+      backgroundColor: theme.colorAbsent,
+      borderColor: theme.colorAbsent,
     },
 
     errorBanner: {
-      backgroundColor: theme.surfaceElevated,
+      backgroundColor: theme.bgSurface,
       borderWidth: 1,
-      borderColor: theme.danger,
+      borderColor: theme.colorError,
       marginHorizontal: 24,
       marginBottom: 10,
       paddingVertical: 10,
@@ -154,12 +154,12 @@ export function createAppStyles(theme: AppTheme) {
     errorText: {
       fontFamily: "BeVietnamPro_600SemiBold",
       fontSize: 14,
-      color: theme.danger,
+      color: theme.colorError,
       textAlign: "center",
     },
 
     primaryButton: {
-      backgroundColor: theme.primary,
+      backgroundColor: theme.colorCorrect,
       paddingVertical: 16,
       paddingHorizontal: 24,
       borderRadius: 16,
@@ -171,10 +171,10 @@ export function createAppStyles(theme: AppTheme) {
     primaryButtonText: {
       fontFamily: "BeVietnamPro_600SemiBold",
       fontSize: 17,
-      color: theme.textOnPrimary,
+      color: theme.textInverse,
     },
     secondaryButton: {
-      backgroundColor: theme.surfaceMuted,
+      backgroundColor: theme.bgSurface,
       borderWidth: 0,
       paddingVertical: 16,
       paddingHorizontal: 24,
@@ -187,10 +187,10 @@ export function createAppStyles(theme: AppTheme) {
     secondaryButtonText: {
       fontFamily: "BeVietnamPro_600SemiBold",
       fontSize: 17,
-      color: theme.text,
+      color: theme.textMain,
     },
     dangerButton: {
-      backgroundColor: theme.surfaceMuted,
+      backgroundColor: theme.bgSurface,
       borderWidth: 0,
       paddingVertical: 16,
       paddingHorizontal: 20,
@@ -203,14 +203,14 @@ export function createAppStyles(theme: AppTheme) {
     dangerButtonText: {
       fontFamily: "BeVietnamPro_600SemiBold",
       fontSize: 17,
-      color: theme.danger,
+      color: theme.colorError,
     },
     buttonRow: {
       flexDirection: "row",
       gap: 12,
     },
     metaBlock: {
-      backgroundColor: theme.surfaceMuted,
+      backgroundColor: theme.bgSurface,
       borderRadius: 12,
       padding: 16,
       gap: 8,
@@ -226,7 +226,7 @@ export function createAppStyles(theme: AppTheme) {
       flex: 1,
     },
     sheet: {
-      backgroundColor: theme.surface,
+      backgroundColor: theme.bgSurface,
       borderTopLeftRadius: 32,
       borderTopRightRadius: 32,
       borderWidth: 0,
@@ -243,7 +243,7 @@ export function createAppStyles(theme: AppTheme) {
       width: 40,
       height: 5,
       borderRadius: 999,
-      backgroundColor: theme.borderStrong,
+      backgroundColor: theme.borderBase,
       marginBottom: 20,
       opacity: 0.5,
     },
@@ -257,7 +257,7 @@ export function createAppStyles(theme: AppTheme) {
       flex: 1,
       fontFamily: "BeVietnamPro_700Bold",
       fontSize: 22,
-      color: theme.text,
+      color: theme.textMain,
     },
     sheetContent: {
       gap: 16,
@@ -276,22 +276,23 @@ export function createAppStyles(theme: AppTheme) {
     modalWord: {
       fontFamily: "BeVietnamPro_700Bold",
       fontSize: 28,
-      color: theme.primaryStrong,
+      color: theme.colorCorrect,
       letterSpacing: 6,
       textAlign: "center",
     },
 
     sectionCard: {
-      backgroundColor: theme.surfaceElevated,
+      backgroundColor: theme.bgSurface,
       borderRadius: 20,
-      borderWidth: 0,
+      borderWidth: 1,
+      borderColor: theme.borderBase,
       padding: 20,
       gap: 12,
     },
     sectionTitle: {
       fontFamily: "BeVietnamPro_600SemiBold",
       fontSize: 17,
-      color: theme.text,
+      color: theme.textMain,
       letterSpacing: 0.3,
     },
     rowBetween: {
@@ -307,7 +308,7 @@ export function createAppStyles(theme: AppTheme) {
     rowLabel: {
       fontFamily: "BeVietnamPro_600SemiBold",
       fontSize: 16,
-      color: theme.text,
+      color: theme.textMain,
     },
     rowDescription: {
       fontFamily: "BeVietnamPro_500Medium",
@@ -321,8 +322,9 @@ export function createAppStyles(theme: AppTheme) {
     },
     exampleCard: {
       flexDirection: "row",
-      backgroundColor: theme.surfaceElevated,
-      borderWidth: 0,
+      backgroundColor: theme.bgSurface,
+      borderWidth: 1,
+      borderColor: theme.borderBase,
       borderRadius: 24,
       padding: 16,
       gap: 16,
@@ -338,7 +340,7 @@ export function createAppStyles(theme: AppTheme) {
     exampleTileText: {
       fontFamily: "BeVietnamPro_700Bold",
       fontSize: 20,
-      color: theme.textOnPrimary,
+      color: theme.textInverse,
     },
     exampleTextContent: {
       flex: 1,
@@ -347,7 +349,7 @@ export function createAppStyles(theme: AppTheme) {
     exampleLabel: {
       fontFamily: "BeVietnamPro_600SemiBold",
       fontSize: 16,
-      color: theme.text,
+      color: theme.textMain,
     },
     bulletBlock: {
       gap: 12,
@@ -367,7 +369,7 @@ export function createAppStyles(theme: AppTheme) {
     modalTitle: {
       fontFamily: "BeVietnamPro_700Bold",
       fontSize: 24,
-      color: theme.text,
+      color: theme.textMain,
       textAlign: "center",
     },
     modalSubtitle: {
@@ -383,30 +385,15 @@ export function createAppStyles(theme: AppTheme) {
     gameOverWord: {
       fontFamily: "BeVietnamPro_700Bold",
       fontSize: 36,
-      color: theme.primary,
+      color: theme.colorCorrect,
       textAlign: "center",
       marginVertical: 16,
       letterSpacing: 4,
     },
     sectionDivider: {
       height: 1,
-      backgroundColor: theme.border,
+      backgroundColor: theme.borderBase,
       marginVertical: 16,
-    },
-    
-    debugContainer: {
-      alignSelf: "center",
-      backgroundColor: theme.debugBackground,
-      paddingVertical: 4,
-      paddingHorizontal: 12,
-      borderRadius: 8,
-    },
-    debugText: {
-      fontFamily: "BeVietnamPro_600SemiBold",
-      fontSize: 11,
-      color: "#120f0a",
-      letterSpacing: 2,
-      fontVariant: ["tabular-nums"],
     },
   });
 }

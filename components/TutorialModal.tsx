@@ -72,21 +72,21 @@ export default function TutorialModal({
           letter="P"
           label="Correta"
           description="A letra existe e está na posição certa."
-          backgroundColor={theme.success}
+          backgroundColor={theme.colorCorrect}
           theme={theme}
         />
         <ExampleCard
           letter="R"
           label="Presente"
           description="A letra existe, mas fica em outra posição."
-          backgroundColor={theme.warning}
+          backgroundColor={theme.colorPresent}
           theme={theme}
         />
         <ExampleCard
           letter="A"
           label="Ausente"
           description="A letra não faz parte da palavra."
-          backgroundColor={theme.tileAbsent}
+          backgroundColor={theme.colorAbsent}
           theme={theme}
         />
       </View>

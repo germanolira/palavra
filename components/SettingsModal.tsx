@@ -44,10 +44,10 @@ function SettingRow({
         value={value}
         onValueChange={onValueChange}
         trackColor={{
-          false: theme.switchTrackOff,
-          true: theme.primary,
+          false: theme.borderBase,
+          true: theme.colorCorrect,
         }}
-        thumbColor={value ? theme.textOnPrimary : theme.surface}
+        thumbColor={value ? theme.textInverse : theme.bgSurface}
       />
     </View>
   );
