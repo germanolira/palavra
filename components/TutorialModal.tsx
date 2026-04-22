@@ -1,18 +1,19 @@
-import React from 'react';
-import { View, Text, Pressable } from 'react-native';
+import React from "react";
+import { View, Text, Pressable } from "react-native";
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
   withTiming,
   interpolate,
-} from 'react-native-reanimated';
-import * as Haptics from 'expo-haptics';
-import { styles } from '../styles/AppStyles';
-import { PALETTE } from '../constants/theme';
+} from "react-native-reanimated";
+import * as Haptics from "expo-haptics";
+import { styles } from "../styles/AppStyles";
+import { PALETTE } from "../constants/theme";
 
 interface TutorialModalProps {
   visible: boolean;
   onClose: () => void;
+  hapticsEnabled?: boolean;
 }
 
 function ExampleTile({
@@ -25,18 +26,18 @@ function ExampleTile({
   label: string;
 }) {
   return (
-    <View style={{ alignItems: 'center', gap: 4 }}>
+    <View style={{ alignItems: "center", gap: 4 }}>
       <View
         style={{
           width: 36,
           height: 36,
           borderRadius: 6,
           backgroundColor: bg,
-          justifyContent: 'center',
-          alignItems: 'center',
+          justifyContent: "center",
+          alignItems: "center",
         }}
       >
-        <Text style={[styles.tileText, { fontSize: 16, color: '#fff' }]}>
+        <Text style={[styles.tileText, { fontSize: 16, color: "#fff" }]}>
           {letter}
         </Text>
       </View>
@@ -45,7 +46,11 @@ function ExampleTile({
   );
 }
 
-export default function TutorialModal({ visible, onClose }: TutorialModalProps) {
+export default function TutorialModal({
+  visible,
+  onClose,
+  hapticsEnabled = true,
+}: TutorialModalProps) {
   const progress = useSharedValue(0);
 
   React.useEffect(() => {
@@ -54,7 +59,7 @@ export default function TutorialModal({ visible, onClose }: TutorialModalProps) 
 
   const overlayStyle = useAnimatedStyle(() => ({
     opacity: progress.value,
-    pointerEvents: visible ? 'auto' : 'none',
+    pointerEvents: visible ? "auto" : "none",
   }));
 
   const modalStyle = useAnimatedStyle(() => ({
@@ -72,11 +77,11 @@ export default function TutorialModal({ visible, onClose }: TutorialModalProps) 
       <Animated.View style={[styles.modal, modalStyle, { gap: 16 }]}>
         <Text style={styles.modalTitle}>Como jogar</Text>
 
-        <Text style={[styles.modalText, { textAlign: 'left', width: '100%' }]}>
+        <Text style={[styles.modalText, { textAlign: "left", width: "100%" }]}>
           Adivinhe a palavra em 6 tentativas. Cada palavra deve ter 5 letras.
         </Text>
 
-        <View style={{ flexDirection: 'row', gap: 12, marginVertical: 8 }}>
+        <View style={{ flexDirection: "row", gap: 12, marginVertical: 8 }}>
           <ExampleTile
             letter="P"
             bg={PALETTE.primaryContainer}
@@ -94,15 +99,15 @@ export default function TutorialModal({ visible, onClose }: TutorialModalProps) 
           />
         </View>
 
-        <Text style={[styles.modalText, { textAlign: 'left', width: '100%' }]}>
-          • Verde: letra está na posição certa{'\n'}
-          • Amarelo: letra existe, mas em outra posição{'\n'}
-          • Cinza: letra não existe na palavra
+        <Text style={[styles.modalText, { textAlign: "left", width: "100%" }]}>
+          • Verde: letra está na posição certa{"\n"}• Amarelo: letra existe, mas
+          em outra posição{"\n"}• Cinza: letra não existe na palavra
         </Text>
 
         <Pressable
           onPress={() => {
-            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+            if (hapticsEnabled)
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
             onClose();
           }}
           style={[styles.button, { marginTop: 4 }]}

@@ -13,6 +13,7 @@ import type { LetterStates } from "../types";
 interface KeyboardProps {
   onKeyPress: (key: string) => void;
   letterStates: LetterStates;
+  hapticsEnabled?: boolean;
 }
 
 function getKeyStyle(state: string | undefined) {
@@ -33,11 +34,13 @@ function KeyButton({
   state,
   onPress,
   flex = 1,
+  hapticsEnabled = true,
 }: {
   label: string;
   state?: string;
   onPress: () => void;
   flex?: number;
+  hapticsEnabled?: boolean;
 }) {
   const scale = useSharedValue(1);
 
@@ -49,7 +52,7 @@ function KeyButton({
 
   const handlePressIn = () => {
     scale.value = withSpring(0.92, { stiffness: 400, damping: 15 });
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    if (hapticsEnabled) Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
   };
 
   const handlePressOut = () => {
@@ -88,7 +91,11 @@ function KeyButton({
   );
 }
 
-export default function Keyboard({ onKeyPress, letterStates }: KeyboardProps) {
+export default function Keyboard({
+  onKeyPress,
+  letterStates,
+  hapticsEnabled = true,
+}: KeyboardProps) {
   const { width } = useWindowDimensions();
   const gap = Math.max(5, width * 0.012);
 
@@ -103,6 +110,7 @@ export default function Keyboard({ onKeyPress, letterStates }: KeyboardProps) {
               state={letterStates[key]}
               onPress={() => onKeyPress(key)}
               flex={key === "ENTER" || key === "DEL" ? 1.5 : 1}
+              hapticsEnabled={hapticsEnabled}
             />
           ))}
         </View>

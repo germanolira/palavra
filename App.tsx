@@ -1,30 +1,43 @@
-import React, { useState, useCallback, useMemo } from 'react';
+import React, { useState, useCallback, useMemo, useEffect } from "react";
 import {
   ActivityIndicator,
   SafeAreaView,
   Text,
   View,
   Pressable,
-} from 'react-native';
+} from "react-native";
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
   withSequence,
   withTiming,
   withSpring,
-} from 'react-native-reanimated';
-import * as Haptics from 'expo-haptics';
-import { StatusBar } from 'expo-status-bar';
-import { useFonts, BeVietnamPro_500Medium, BeVietnamPro_600SemiBold, BeVietnamPro_700Bold } from '@expo-google-fonts/be-vietnam-pro';
+} from "react-native-reanimated";
+import * as Haptics from "expo-haptics";
+import { StatusBar } from "expo-status-bar";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import {
+  useFonts,
+  BeVietnamPro_500Medium,
+  BeVietnamPro_600SemiBold,
+  BeVietnamPro_700Bold,
+} from "@expo-google-fonts/be-vietnam-pro";
 
-import { WORDS, MAX_GUESSES, WORD_LENGTH } from './constants/words';
-import { evaluateGuess, normalize, getRandomWord, isValidWord } from './utils/gameLogic';
-import Board from './components/Board';
-import Keyboard from './components/Keyboard';
-import GameOverModal from './components/GameOverModal';
-import TutorialModal from './components/TutorialModal';
-import { styles } from './styles/AppStyles';
-import type { BoardRow, LetterStates } from './types';
+import { WORDS, MAX_GUESSES, WORD_LENGTH } from "./constants/words";
+import {
+  evaluateGuess,
+  normalize,
+  getRandomWord,
+  isValidWord,
+} from "./utils/gameLogic";
+import Board from "./components/Board";
+import Keyboard from "./components/Keyboard";
+import GameOverModal from "./components/GameOverModal";
+import TutorialModal from "./components/TutorialModal";
+import SettingsModal from "./components/SettingsModal";
+import { styles } from "./styles/AppStyles";
+import { PALETTE, DARK_PALETTE } from "./constants/theme";
+import type { BoardRow, LetterStates } from "./types";
 
 export default function App() {
   const [fontsLoaded] = useFonts({
@@ -35,10 +48,44 @@ export default function App() {
 
   const [target, setTarget] = useState(() => getRandomWord(WORDS));
   const [guesses, setGuesses] = useState<BoardRow[]>([]);
-  const [current, setCurrent] = useState('');
+  const [current, setCurrent] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [showTutorial, setShowTutorial] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
   const [flipRowIndex, setFlipRowIndex] = useState(-1);
+  const [darkMode, setDarkMode] = useState(false);
+  const [hapticsEnabled, setHapticsEnabled] = useState(true);
+
+  useEffect(() => {
+    loadSettings();
+  }, []);
+
+  const loadSettings = async () => {
+    try {
+      const savedDarkMode = await AsyncStorage.getItem("darkMode");
+      const savedHaptics = await AsyncStorage.getItem("hapticsEnabled");
+      if (savedDarkMode !== null) setDarkMode(JSON.parse(savedDarkMode));
+      if (savedHaptics !== null) setHapticsEnabled(JSON.parse(savedHaptics));
+    } catch (error) {
+      console.error("Failed to load settings:", error);
+    }
+  };
+
+  const saveSettings = async () => {
+    try {
+      await AsyncStorage.setItem("darkMode", JSON.stringify(darkMode));
+      await AsyncStorage.setItem(
+        "hapticsEnabled",
+        JSON.stringify(hapticsEnabled),
+      );
+    } catch (error) {
+      console.error("Failed to save settings:", error);
+    }
+  };
+
+  useEffect(() => {
+    saveSettings();
+  }, [darkMode, hapticsEnabled]);
 
   const gameOver = useMemo(() => {
     if (guesses.length === 0) return false;
@@ -59,11 +106,15 @@ export default function App() {
       for (let i = 0; i < WORD_LENGTH; i++) {
         const letter = guess.word[i];
         const state = guess.eval[i];
-        const priority: Record<string, number> = { correct: 3, present: 2, absent: 1 };
-        const currentPriority = priority[states[letter] ?? ''] || 0;
+        const priority: Record<string, number> = {
+          correct: 3,
+          present: 2,
+          absent: 1,
+        };
+        const currentPriority = priority[states[letter] ?? ""] || 0;
         const newPriority = priority[state] || 0;
         if (newPriority > currentPriority) {
-          states[letter] = state as 'correct' | 'present' | 'absent';
+          states[letter] = state as "correct" | "present" | "absent";
         }
       }
     }
@@ -84,56 +135,63 @@ export default function App() {
       withTiming(6, { duration: 50 }),
       withTiming(-3, { duration: 50 }),
       withTiming(3, { duration: 50 }),
-      withTiming(0, { duration: 50 })
+      withTiming(0, { duration: 50 }),
     );
-    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-  }, []);
+    if (hapticsEnabled)
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+  }, [hapticsEnabled]);
 
-  const onKey = useCallback((key: string) => {
-    if (gameOver) return;
-    setError(null);
+  const onKey = useCallback(
+    (key: string) => {
+      if (gameOver) return;
+      setError(null);
 
-    if (key === 'ENTER') {
-      if (current.length !== WORD_LENGTH) {
-        triggerShake();
-        setError('Complete a palavra');
+      if (key === "ENTER") {
+        if (current.length !== WORD_LENGTH) {
+          triggerShake();
+          setError("Complete a palavra");
+          return;
+        }
+
+        const normalized = normalize(current);
+        if (!isValidWord(normalized, WORDS)) {
+          triggerShake();
+          setError("Palavra não encontrada");
+          return;
+        }
+
+        const evalRes = evaluateGuess(normalized, target);
+        setGuesses((prev) => [...prev, { word: normalized, eval: evalRes }]);
+        setCurrent("");
+        setFlipRowIndex(guesses.length);
+        if (hapticsEnabled)
+          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
         return;
       }
 
-      const normalized = normalize(current);
-      if (!isValidWord(normalized, WORDS)) {
-        triggerShake();
-        setError('Palavra não encontrada');
+      if (key === "DEL") {
+        setCurrent((prev) => prev.slice(0, -1));
         return;
       }
 
-      const evalRes = evaluateGuess(normalized, target);
-      setGuesses((prev) => [...prev, { word: normalized, eval: evalRes }]);
-      setCurrent('');
-      setFlipRowIndex(guesses.length);
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      return;
-    }
-
-    if (key === 'DEL') {
-      setCurrent((prev) => prev.slice(0, -1));
-      return;
-    }
-
-    setCurrent((prev) => {
-      if (prev.length >= WORD_LENGTH) {
-        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-        return prev;
-      }
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-      return prev + key;
-    });
-  }, [current, target, gameOver, guesses.length, triggerShake]);
+      setCurrent((prev) => {
+        if (prev.length >= WORD_LENGTH) {
+          if (hapticsEnabled)
+            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+          return prev;
+        }
+        if (hapticsEnabled)
+          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+        return prev + key;
+      });
+    },
+    [current, target, gameOver, guesses.length, triggerShake, hapticsEnabled],
+  );
 
   const restart = useCallback(() => {
     setTarget(getRandomWord(WORDS));
     setGuesses([]);
-    setCurrent('');
+    setCurrent("");
     setError(null);
     setFlipRowIndex(-1);
   }, []);
@@ -141,10 +199,10 @@ export default function App() {
   const board = useMemo<BoardRow[]>(() => {
     const rows = [...guesses];
     if (rows.length < MAX_GUESSES) {
-      rows.push({ word: current, eval: Array(WORD_LENGTH).fill('active') });
+      rows.push({ word: current, eval: Array(WORD_LENGTH).fill("active") });
     }
     while (rows.length < MAX_GUESSES) {
-      rows.push({ word: '', eval: Array(WORD_LENGTH).fill('empty') });
+      rows.push({ word: "", eval: Array(WORD_LENGTH).fill("empty") });
     }
     return rows;
   }, [guesses, current]);
@@ -157,12 +215,29 @@ export default function App() {
     );
   }
 
+  const palette = darkMode ? DARK_PALETTE : PALETTE;
+
   return (
-    <SafeAreaView style={styles.container}>
-      <StatusBar style="dark" />
+    <SafeAreaView
+      style={[styles.container, { backgroundColor: palette.surface }]}
+    >
+      <StatusBar style={darkMode ? "light" : "dark"} />
 
       <View style={styles.header}>
-        <View style={styles.headerSide} />
+        <View style={styles.headerSide}>
+          <Pressable
+            onPress={() => {
+              if (hapticsEnabled)
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+              setShowSettings(true);
+            }}
+            style={styles.helpButton}
+            accessibilityLabel="Configurações"
+            accessibilityRole="button"
+          >
+            <Text style={styles.helpButtonText}>⚙️</Text>
+          </Pressable>
+        </View>
         <View style={styles.headerCenter}>
           {__DEV__ && (
             <View style={styles.debugContainer}>
@@ -173,7 +248,8 @@ export default function App() {
         <View style={styles.headerSide}>
           <Pressable
             onPress={() => {
-              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+              if (hapticsEnabled)
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
               setShowTutorial(true);
             }}
             style={styles.helpButton}
@@ -195,14 +271,37 @@ export default function App() {
             <Text style={styles.errorText}>{error}</Text>
           </View>
         )}
-        <Keyboard onKeyPress={onKey} letterStates={letterStates} />
+        <Keyboard
+          onKeyPress={onKey}
+          letterStates={letterStates}
+          hapticsEnabled={hapticsEnabled}
+        />
       </View>
 
       {gameOver && (
-        <GameOverModal won={won} target={target} onRestart={restart} />
+        <GameOverModal
+          won={won}
+          target={target}
+          onRestart={restart}
+          hapticsEnabled={hapticsEnabled}
+        />
       )}
 
-      <TutorialModal visible={showTutorial} onClose={() => setShowTutorial(false)} />
+      <TutorialModal
+        visible={showTutorial}
+        onClose={() => setShowTutorial(false)}
+        hapticsEnabled={hapticsEnabled}
+      />
+
+      <SettingsModal
+        visible={showSettings}
+        onClose={() => setShowSettings(false)}
+        darkMode={darkMode}
+        onDarkModeChange={setDarkMode}
+        hapticsEnabled={hapticsEnabled}
+        onHapticsChange={setHapticsEnabled}
+        globalHapticsEnabled={hapticsEnabled}
+      />
     </SafeAreaView>
   );
 }
