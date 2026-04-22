@@ -115,11 +115,18 @@ export const styles = StyleSheet.create({
     textAlign: 'center',
     marginBottom: 8,
   },
-  title: {
-    fontFamily: 'BeVietnamPro_700Bold',
-    fontSize: 28,
-    color: PALETTE.onSurface,
-    textAlign: 'center',
-    marginBottom: 16,
+  debugContainer: {
+    alignSelf: 'center',
+    backgroundColor: '#ffeb3b',
+    paddingVertical: 4,
+    paddingHorizontal: 12,
+    borderRadius: 4,
+    marginBottom: 8,
+  },
+  debugText: {
+    fontFamily: 'BeVietnamPro_600SemiBold',
+    fontSize: 12,
+    color: '#000',
+    letterSpacing: 2,
   },
 });

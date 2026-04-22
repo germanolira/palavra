@@ -117,7 +117,11 @@ export default function App() {
     <SafeAreaView style={styles.container}>
       <StatusBar style="dark" />
 
-      <Text style={styles.title}>PALAVRA</Text>
+      {__DEV__ && (
+        <View style={styles.debugContainer}>
+          <Text style={styles.debugText}>{target}</Text>
+        </View>
+      )}
 
       <Board board={board} />
 
