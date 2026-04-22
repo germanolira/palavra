@@ -13,15 +13,8 @@
     "skipLibCheck": true,
     "resolveJsonModule": true,
     "strict": true,
-    "ignoreDeprecations": "6.0",
     "esModuleInterop": true,
-    "forceConsistentCasingInFileNames": true,
-    "baseUrl": ".",
-    "paths": {
-      "@/*": [
-        "./*"
-      ]
-    }
+    "forceConsistentCasingInFileNames": true
   },
   "include": [
     "**/*.ts",

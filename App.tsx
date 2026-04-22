@@ -31,7 +31,6 @@ import TutorialModal from "./components/TutorialModal";
 import { DARK_THEME, LIGHT_THEME } from "./constants/theme";
 import { MAX_GUESSES, WORD_LENGTH, WORDS } from "./constants/words";
 import {
-  clearDailyWordStorage,
   getDailySeedBaseDate,
   getDailySeedFinalDate,
   getTodayDateKey,
@@ -47,7 +46,6 @@ const SETTINGS_STORAGE_KEY = "appSettings";
 type AppSettings = {
   darkMode?: boolean;
   hapticsEnabled?: boolean;
-  debugMode?: boolean;
 };
 
 export default function App() {
@@ -67,7 +65,6 @@ export default function App() {
   const [flipRowIndex, setFlipRowIndex] = useState(-1);
   const [darkMode, setDarkMode] = useState(false);
   const [hapticsEnabled, setHapticsEnabled] = useState(true);
-  const [debugMode, setDebugMode] = useState(false);
   const [settingsReady, setSettingsReady] = useState(false);
   const [gameReady, setGameReady] = useState(false);
 
@@ -107,10 +104,6 @@ export default function App() {
           if (typeof savedSettings.hapticsEnabled === "boolean") {
             setHapticsEnabled(savedSettings.hapticsEnabled);
           }
-
-          if (typeof savedSettings.debugMode === "boolean") {
-            setDebugMode(savedSettings.debugMode);
-          }
         }
 
         await loadDailyWord();
@@ -143,11 +136,11 @@ export default function App() {
 
     AsyncStorage.setItem(
       SETTINGS_STORAGE_KEY,
-      JSON.stringify({ darkMode, hapticsEnabled, debugMode }),
+      JSON.stringify({ darkMode, hapticsEnabled }),
     ).catch((saveError) => {
       console.error("Failed to save settings:", saveError);
     });
-  }, [darkMode, hapticsEnabled, debugMode, settingsReady]);
+  }, [darkMode, hapticsEnabled, settingsReady]);
 
   const theme = darkMode ? DARK_THEME : LIGHT_THEME;
   const styles = useMemo(() => createAppStyles(theme), [theme]);
@@ -338,13 +331,7 @@ export default function App() {
           </Pressable>
         </View>
 
-        <View style={styles.headerCenter}>
-          {debugMode || __DEV__ ? (
-            <View style={styles.debugContainer}>
-              <Text style={styles.debugText}>{target}</Text>
-            </View>
-          ) : null}
-        </View>
+        <View style={styles.headerCenter} />
 
         <View style={styles.headerSide}>
           <Pressable

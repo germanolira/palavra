@@ -13,9 +13,6 @@ interface SettingsModalProps {
   hapticsEnabled: boolean;
   onHapticsChange: (value: boolean) => void;
   globalHapticsEnabled?: boolean;
-  debugMode: boolean;
-  onDebugModeChange: (value: boolean) => void;
-  onClearLocalData: () => void;
   activeDate: string;
   dailySeedBaseDate: string;
   dailySeedFinalDate: string;
@@ -63,9 +60,6 @@ export default function SettingsModal({
   onDarkModeChange,
   hapticsEnabled,
   onHapticsChange,
-  debugMode,
-  onDebugModeChange,
-  onClearLocalData,
   activeDate,
   dailySeedBaseDate,
   dailySeedFinalDate,
@@ -81,18 +75,9 @@ export default function SettingsModal({
       theme={theme}
       hapticsEnabled={hapticsEnabled}
       footer={
-        <>
-          <Pressable
-            onPress={onClearLocalData}
-            style={styles.dangerButton}
-            accessibilityRole="button"
-          >
-            <Text style={styles.dangerButtonText}>Limpar dados</Text>
-          </Pressable>
-          <Pressable onPress={onClose} style={styles.secondaryButton} accessibilityRole="button">
-            <Text style={styles.secondaryButtonText}>Fechar</Text>
-          </Pressable>
-        </>
+        <Pressable onPress={onClose} style={styles.secondaryButton} accessibilityRole="button">
+          <Text style={styles.secondaryButtonText}>Fechar</Text>
+        </Pressable>
       }
     >
       <View style={styles.sectionCard}>
@@ -117,22 +102,6 @@ export default function SettingsModal({
         />
       </View>
 
-      {__DEV__ && (
-        <View style={styles.sectionCard}>
-          <Text style={styles.sectionTitle}>Debug</Text>
-          <SettingRow
-            label="Debug mode"
-            description="Mostra a data ativa e a resposta atual para facilitar os testes."
-            value={debugMode}
-            onValueChange={onDebugModeChange}
-            theme={theme}
-          />
-          <View style={styles.metaBlock}>
-            <Text style={styles.rowDescription}>{`Calendário local: ${dailySeedBaseDate} até ${dailySeedFinalDate}`}</Text>
-            <Text style={styles.rowDescription}>{`Data carregada agora: ${activeDate || dailySeedBaseDate}`}</Text>
-          </View>
-        </View>
-      )}
     </BottomSheetModal>
   );
 }

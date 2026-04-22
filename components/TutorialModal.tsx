@@ -90,15 +90,6 @@ export default function TutorialModal({
           theme={theme}
         />
       </View>
-
-      <View style={styles.sectionCard}>
-        <Text style={styles.sectionTitle}>Dicas</Text>
-        <View style={styles.bulletBlock}>
-          <Text style={styles.bulletText}>• Use as cores do tabuleiro para ajustar o próximo palpite.</Text>
-          <Text style={styles.bulletText}>• As teclas também mudam de cor para mostrar o melhor estado de cada letra.</Text>
-          <Text style={styles.bulletText}>• Tente abrir com vogais e consoantes comuns para ganhar informação cedo.</Text>
-        </View>
-      </View>
     </BottomSheetModal>
   );
 }
