@@ -297,20 +297,6 @@ export default function App() {
     setFlipRowIndex(-1);
   }, []);
 
-  const clearLocalData = useCallback(async () => {
-    setGameReady(false);
-
-    try {
-      await clearDailyWordStorage();
-      await loadDailyWord();
-    } catch (clearError) {
-      console.error("Failed to reset local data:", clearError);
-      setError("Nao foi possivel limpar os dados locais");
-    } finally {
-      setGameReady(true);
-    }
-  }, [loadDailyWord]);
-
   const board = useMemo<BoardRow[]>(() => {
     const nextRows = [...guesses];
 
@@ -355,7 +341,7 @@ export default function App() {
         <View style={styles.headerCenter}>
           {debugMode || __DEV__ ? (
             <View style={styles.debugContainer}>
-              <Text style={styles.debugText}>{`${activeDate}  ${target}`}</Text>
+              <Text style={styles.debugText}>{target}</Text>
             </View>
           ) : null}
         </View>
@@ -420,9 +406,6 @@ export default function App() {
         hapticsEnabled={hapticsEnabled}
         onHapticsChange={setHapticsEnabled}
         globalHapticsEnabled={hapticsEnabled}
-        debugMode={debugMode}
-        onDebugModeChange={setDebugMode}
-        onClearLocalData={clearLocalData}
         activeDate={activeDate}
         dailySeedBaseDate={getDailySeedBaseDate()}
         dailySeedFinalDate={getDailySeedFinalDate()}

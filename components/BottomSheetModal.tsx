@@ -56,7 +56,7 @@ export default function BottomSheetModal({
     ],
   }));
 
-  if (!visible && progress.value === 0) {
+  if (!visible) {
     return null;
   }
 
