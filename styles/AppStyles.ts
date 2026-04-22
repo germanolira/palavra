@@ -70,10 +70,11 @@ export const styles = StyleSheet.create({
   bottomArea: {
     paddingTop: 8,
     paddingBottom: 16,
+    flexShrink: 0,
   },
 
   keyboard: {},
-  keyRow: { flexDirection: 'row', justifyContent: 'center' },
+  keyRow: { flexDirection: 'row', justifyContent: 'center', minHeight: 50 },
   key: {
     backgroundColor: PALETTE.surfaceContainerHigh,
     justifyContent: 'center',

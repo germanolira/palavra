@@ -1,14 +1,14 @@
-import React from 'react';
-import { View, Text, Pressable, useWindowDimensions } from 'react-native';
+import React from "react";
+import { View, Text, Pressable, useWindowDimensions } from "react-native";
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
   withSpring,
-} from 'react-native-reanimated';
-import * as Haptics from 'expo-haptics';
-import { styles } from '../styles/AppStyles';
-import { KEYBOARD_ROWS } from '../constants/words';
-import type { LetterStates } from '../types';
+} from "react-native-reanimated";
+import * as Haptics from "expo-haptics";
+import { styles } from "../styles/AppStyles";
+import { KEYBOARD_ROWS } from "../constants/words";
+import type { LetterStates } from "../types";
 
 interface KeyboardProps {
   onKeyPress: (key: string) => void;
@@ -17,10 +17,14 @@ interface KeyboardProps {
 
 function getKeyStyle(state: string | undefined) {
   switch (state) {
-    case 'correct': return styles.keyCorrect;
-    case 'present': return styles.keyPresent;
-    case 'absent': return styles.keyAbsent;
-    default: return null;
+    case "correct":
+      return styles.keyCorrect;
+    case "present":
+      return styles.keyPresent;
+    case "absent":
+      return styles.keyAbsent;
+    default:
+      return null;
   }
 }
 
@@ -37,9 +41,11 @@ function KeyButton({
 }) {
   const scale = useSharedValue(1);
 
-  const animatedStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: scale.value }],
-  }));
+  const animatedStyle = useAnimatedStyle(() => {
+    return {
+      transform: [{ scale: scale.value }],
+    };
+  });
 
   const handlePressIn = () => {
     scale.value = withSpring(0.92, { stiffness: 400, damping: 15 });
@@ -54,7 +60,7 @@ function KeyButton({
   const keyHeight = Math.max(46, width * 0.115);
   const fontSize = Math.max(12, width * 0.032);
 
-  const isSpecial = label === 'ENTER' || label === 'DEL';
+  const isSpecial = label === "ENTER" || label === "DEL";
 
   return (
     <Animated.View style={[{ flex }, animatedStyle]}>
@@ -75,7 +81,7 @@ function KeyButton({
         accessibilityRole="button"
       >
         <Text style={[styles.keyText, { fontSize }]}>
-          {label === 'DEL' ? '⌫' : label}
+          {label === "DEL" ? "⌫" : label}
         </Text>
       </Pressable>
     </Animated.View>
@@ -96,7 +102,7 @@ export default function Keyboard({ onKeyPress, letterStates }: KeyboardProps) {
               label={key}
               state={letterStates[key]}
               onPress={() => onKeyPress(key)}
-              flex={key === 'ENTER' || key === 'DEL' ? 1.5 : 1}
+              flex={key === "ENTER" || key === "DEL" ? 1.5 : 1}
             />
           ))}
         </View>
