@@ -1,14 +1,9 @@
 import React from "react";
-import { View, Text, Pressable, Switch } from "react-native";
-import Animated, {
-  useSharedValue,
-  useAnimatedStyle,
-  withTiming,
-  interpolate,
-} from "react-native-reanimated";
-import * as Haptics from "expo-haptics";
-import { styles } from "../styles/AppStyles";
-import { PALETTE, DARK_PALETTE } from "../constants/theme";
+import { Pressable, Switch, Text, View } from "react-native";
+
+import type { AppTheme } from "../constants/theme";
+import { createAppStyles } from "../styles/AppStyles";
+import BottomSheetModal from "./BottomSheetModal";
 
 interface SettingsModalProps {
   visible: boolean;
@@ -18,44 +13,44 @@ interface SettingsModalProps {
   hapticsEnabled: boolean;
   onHapticsChange: (value: boolean) => void;
   globalHapticsEnabled?: boolean;
+  debugMode: boolean;
+  onDebugModeChange: (value: boolean) => void;
+  onClearLocalData: () => void;
+  activeDate: string;
+  dailySeedBaseDate: string;
+  dailySeedFinalDate: string;
+  theme: AppTheme;
 }
 
 function SettingRow({
   label,
+  description,
   value,
   onValueChange,
-  hapticsEnabled = true,
+  theme,
 }: {
   label: string;
+  description: string;
   value: boolean;
   onValueChange: (value: boolean) => void;
-  hapticsEnabled?: boolean;
+  theme: AppTheme;
 }) {
-  const handleToggle = () => {
-    if (hapticsEnabled) Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    onValueChange(!value);
-  };
+  const styles = React.useMemo(() => createAppStyles(theme), [theme]);
 
   return (
-    <View
-      style={{
-        flexDirection: "row",
-        justifyContent: "space-between",
-        alignItems: "center",
-        width: "100%",
-      }}
-    >
-      <Text style={[styles.modalText, { textAlign: "left", fontSize: 16 }]}>
-        {label}
-      </Text>
+    <View style={styles.rowBetween}>
+      <View style={styles.rowLabelBlock}>
+        <Text style={styles.rowLabel}>{label}</Text>
+        <Text style={styles.rowDescription}>{description}</Text>
+      </View>
       <Switch
         value={value}
-        onValueChange={handleToggle}
+        onValueChange={onValueChange}
         trackColor={{
-          false: PALETTE.surfaceContainerHigh,
-          true: PALETTE.primary,
+          false: theme.switchTrackOff,
+          true: theme.primary,
         }}
-        thumbColor={value ? PALETTE.primaryContainer : PALETTE.surface}
+        thumbColor={value ? theme.textOnPrimary : theme.surface}
       />
     </View>
   );
@@ -68,60 +63,73 @@ export default function SettingsModal({
   onDarkModeChange,
   hapticsEnabled,
   onHapticsChange,
-  globalHapticsEnabled = true,
+  debugMode,
+  onDebugModeChange,
+  onClearLocalData,
+  activeDate,
+  dailySeedBaseDate,
+  dailySeedFinalDate,
+  theme,
 }: SettingsModalProps) {
-  const progress = useSharedValue(0);
-
-  React.useEffect(() => {
-    progress.value = withTiming(visible ? 1 : 0, { duration: 250 });
-  }, [visible]);
-
-  const overlayStyle = useAnimatedStyle(() => ({
-    opacity: progress.value,
-    pointerEvents: visible ? "auto" : "none",
-  }));
-
-  const modalStyle = useAnimatedStyle(() => ({
-    opacity: progress.value,
-    transform: [
-      { scale: interpolate(progress.value, [0, 1], [0.9, 1]) },
-      { translateY: interpolate(progress.value, [0, 1], [16, 0]) },
-    ],
-  }));
-
-  if (!visible && progress.value === 0) return null;
+  const styles = React.useMemo(() => createAppStyles(theme), [theme]);
 
   return (
-    <Animated.View style={[styles.overlay, overlayStyle]}>
-      <Animated.View style={[styles.modal, modalStyle, { gap: 16 }]}>
-        <Text style={styles.modalTitle}>Configurações</Text>
-
+    <BottomSheetModal
+      visible={visible}
+      onClose={onClose}
+      title="Configuracoes"
+      theme={theme}
+      hapticsEnabled={hapticsEnabled}
+    >
+      <View style={styles.sectionCard}>
+        <Text style={styles.sectionTitle}>Aparencia</Text>
         <SettingRow
           label="Modo escuro"
+          description="Usa a nova paleta noturna com contraste mais suave e elegante."
           value={darkMode}
           onValueChange={onDarkModeChange}
-          hapticsEnabled={globalHapticsEnabled}
+          theme={theme}
         />
+      </View>
 
+      <View style={styles.sectionCard}>
+        <Text style={styles.sectionTitle}>Feedback</Text>
         <SettingRow
           label="Haptics"
+          description="Adiciona resposta tactil ao tocar no teclado e nas acoes do jogo."
           value={hapticsEnabled}
           onValueChange={onHapticsChange}
-          hapticsEnabled={globalHapticsEnabled}
+          theme={theme}
         />
+      </View>
 
+      <View style={styles.sectionCard}>
+        <Text style={styles.sectionTitle}>Debug</Text>
+        <SettingRow
+          label="Debug mode"
+          description="Mostra a data ativa e a resposta atual para facilitar os testes."
+          value={debugMode}
+          onValueChange={onDebugModeChange}
+          theme={theme}
+        />
+        <View style={styles.metaBlock}>
+          <Text style={styles.rowDescription}>{`Calendario local: ${dailySeedBaseDate} ate ${dailySeedFinalDate}`}</Text>
+          <Text style={styles.rowDescription}>{`Data carregada agora: ${activeDate || dailySeedBaseDate}`}</Text>
+        </View>
+      </View>
+
+      <View style={styles.buttonRow}>
         <Pressable
-          onPress={() => {
-            if (globalHapticsEnabled)
-              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-            onClose();
-          }}
-          style={[styles.button, { marginTop: 4 }]}
+          onPress={onClearLocalData}
+          style={styles.dangerButton}
           accessibilityRole="button"
         >
-          <Text style={styles.buttonText}>Fechar</Text>
+          <Text style={styles.dangerButtonText}>Clear dados</Text>
         </Pressable>
-      </Animated.View>
-    </Animated.View>
+        <Pressable onPress={onClose} style={styles.secondaryButton} accessibilityRole="button">
+          <Text style={styles.secondaryButtonText}>Fechar</Text>
+        </Pressable>
+      </View>
+    </BottomSheetModal>
   );
 }

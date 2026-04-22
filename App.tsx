@@ -1,20 +1,11 @@
-import React, { useState, useCallback, useMemo, useEffect } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
+  Pressable,
   SafeAreaView,
   Text,
   View,
-  Pressable,
 } from "react-native";
-import Animated, {
-  useSharedValue,
-  useAnimatedStyle,
-  withSequence,
-  withTiming,
-  withSpring,
-} from "react-native-reanimated";
-import * as Haptics from "expo-haptics";
-import { StatusBar } from "expo-status-bar";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import {
   useFonts,
@@ -22,22 +13,42 @@ import {
   BeVietnamPro_600SemiBold,
   BeVietnamPro_700Bold,
 } from "@expo-google-fonts/be-vietnam-pro";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
+import * as Haptics from "expo-haptics";
+import { StatusBar } from "expo-status-bar";
+import Animated, {
+  useAnimatedStyle,
+  useSharedValue,
+  withSequence,
+  withTiming,
+} from "react-native-reanimated";
 
-import { WORDS, MAX_GUESSES, WORD_LENGTH } from "./constants/words";
-import {
-  evaluateGuess,
-  normalize,
-  getRandomWord,
-  isValidWord,
-} from "./utils/gameLogic";
 import Board from "./components/Board";
-import Keyboard from "./components/Keyboard";
 import GameOverModal from "./components/GameOverModal";
-import TutorialModal from "./components/TutorialModal";
+import Keyboard from "./components/Keyboard";
 import SettingsModal from "./components/SettingsModal";
-import { styles } from "./styles/AppStyles";
-import { PALETTE, DARK_PALETTE } from "./constants/theme";
+import TutorialModal from "./components/TutorialModal";
+import { DARK_THEME, LIGHT_THEME } from "./constants/theme";
+import { MAX_GUESSES, WORD_LENGTH, WORDS } from "./constants/words";
+import {
+  clearDailyWordStorage,
+  getDailySeedBaseDate,
+  getDailySeedFinalDate,
+  getTodayDateKey,
+  getWordForDate,
+  initializeDailyWordStorage,
+} from "./services/dailyWordStorage";
+import { createAppStyles } from "./styles/AppStyles";
 import type { BoardRow, LetterStates } from "./types";
+import { evaluateGuess, isValidWord, normalize } from "./utils/gameLogic";
+
+const SETTINGS_STORAGE_KEY = "appSettings";
+
+type AppSettings = {
+  darkMode?: boolean;
+  hapticsEnabled?: boolean;
+  debugMode?: boolean;
+};
 
 export default function App() {
   const [fontsLoaded] = useFonts({
@@ -46,7 +57,8 @@ export default function App() {
     BeVietnamPro_700Bold,
   });
 
-  const [target, setTarget] = useState(() => getRandomWord(WORDS));
+  const [target, setTarget] = useState("");
+  const [activeDate, setActiveDate] = useState("");
   const [guesses, setGuesses] = useState<BoardRow[]>([]);
   const [current, setCurrent] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -55,69 +67,132 @@ export default function App() {
   const [flipRowIndex, setFlipRowIndex] = useState(-1);
   const [darkMode, setDarkMode] = useState(false);
   const [hapticsEnabled, setHapticsEnabled] = useState(true);
+  const [debugMode, setDebugMode] = useState(false);
+  const [settingsReady, setSettingsReady] = useState(false);
+  const [gameReady, setGameReady] = useState(false);
 
-  useEffect(() => {
-    loadSettings();
+  const loadDailyWord = useCallback(async () => {
+    const todayKey = getTodayDateKey();
+
+    await initializeDailyWordStorage();
+
+    const dailyWord = await getWordForDate(todayKey);
+
+    if (!dailyWord) {
+      throw new Error(`Missing daily word for ${todayKey}`);
+    }
+
+    setActiveDate(todayKey);
+    setTarget(dailyWord);
+    setGuesses([]);
+    setCurrent("");
+    setError(null);
+    setFlipRowIndex(-1);
   }, []);
 
-  const loadSettings = async () => {
-    try {
-      const savedDarkMode = await AsyncStorage.getItem("darkMode");
-      const savedHaptics = await AsyncStorage.getItem("hapticsEnabled");
-      if (savedDarkMode !== null) setDarkMode(JSON.parse(savedDarkMode));
-      if (savedHaptics !== null) setHapticsEnabled(JSON.parse(savedHaptics));
-    } catch (error) {
-      console.error("Failed to load settings:", error);
-    }
-  };
-
-  const saveSettings = async () => {
-    try {
-      await AsyncStorage.setItem("darkMode", JSON.stringify(darkMode));
-      await AsyncStorage.setItem(
-        "hapticsEnabled",
-        JSON.stringify(hapticsEnabled),
-      );
-    } catch (error) {
-      console.error("Failed to save settings:", error);
-    }
-  };
-
   useEffect(() => {
-    saveSettings();
-  }, [darkMode, hapticsEnabled]);
+    let mounted = true;
 
-  const gameOver = useMemo(() => {
-    if (guesses.length === 0) return false;
-    const lastGuess = guesses[guesses.length - 1];
-    const won = lastGuess.word === target;
-    const lost = guesses.length >= MAX_GUESSES && !won;
-    return won || lost;
-  }, [guesses, target]);
+    async function bootApp() {
+      try {
+        const rawSettings = await AsyncStorage.getItem(SETTINGS_STORAGE_KEY);
 
-  const won = useMemo(() => {
-    if (guesses.length === 0) return false;
-    return guesses[guesses.length - 1].word === target;
-  }, [guesses, target]);
+        if (rawSettings && mounted) {
+          const savedSettings = JSON.parse(rawSettings) as AppSettings;
 
-  const letterStates: LetterStates = useMemo(() => {
-    const states: LetterStates = {};
-    for (const guess of guesses) {
-      for (let i = 0; i < WORD_LENGTH; i++) {
-        const letter = guess.word[i];
-        const state = guess.eval[i];
-        const priority: Record<string, number> = {
-          correct: 3,
-          present: 2,
-          absent: 1,
-        };
-        const currentPriority = priority[states[letter] ?? ""] || 0;
-        const newPriority = priority[state] || 0;
-        if (newPriority > currentPriority) {
-          states[letter] = state as "correct" | "present" | "absent";
+          if (typeof savedSettings.darkMode === "boolean") {
+            setDarkMode(savedSettings.darkMode);
+          }
+
+          if (typeof savedSettings.hapticsEnabled === "boolean") {
+            setHapticsEnabled(savedSettings.hapticsEnabled);
+          }
+
+          if (typeof savedSettings.debugMode === "boolean") {
+            setDebugMode(savedSettings.debugMode);
+          }
+        }
+
+        await loadDailyWord();
+      } catch (loadError) {
+        console.error("Failed to initialize app:", loadError);
+        if (mounted) {
+          setActiveDate(getTodayDateKey());
+          setTarget(WORDS[0]);
+          setError("Banco local indisponivel. Usando fallback offline.");
+        }
+      } finally {
+        if (mounted) {
+          setSettingsReady(true);
+          setGameReady(true);
         }
       }
     }
+
+    bootApp();
+
+    return () => {
+      mounted = false;
+    };
+  }, [loadDailyWord]);
+
+  useEffect(() => {
+    if (!settingsReady) {
+      return;
+    }
+
+    AsyncStorage.setItem(
+      SETTINGS_STORAGE_KEY,
+      JSON.stringify({ darkMode, hapticsEnabled, debugMode }),
+    ).catch((saveError) => {
+      console.error("Failed to save settings:", saveError);
+    });
+  }, [darkMode, hapticsEnabled, debugMode, settingsReady]);
+
+  const theme = darkMode ? DARK_THEME : LIGHT_THEME;
+  const styles = useMemo(() => createAppStyles(theme), [theme]);
+
+  const gameOver = useMemo(() => {
+    if (!target || guesses.length === 0) {
+      return false;
+    }
+
+    const lastGuess = guesses[guesses.length - 1];
+    const wonGame = lastGuess.word === target;
+
+    return wonGame || guesses.length >= MAX_GUESSES;
+  }, [guesses, target]);
+
+  const won = useMemo(() => {
+    if (!target || guesses.length === 0) {
+      return false;
+    }
+
+    return guesses[guesses.length - 1].word === target;
+  }, [guesses, target]);
+
+  const letterStates = useMemo<LetterStates>(() => {
+    const states: LetterStates = {};
+    const priority = { correct: 3, present: 2, absent: 1 } as const;
+
+    for (const guess of guesses) {
+      for (let index = 0; index < WORD_LENGTH; index += 1) {
+        const letter = guess.word[index];
+        const state = guess.eval[index];
+
+        if (!letter || !(state in priority)) {
+          continue;
+        }
+
+        const currentPriority = priority[states[letter]] ?? 0;
+        const nextPriority = priority[state as keyof typeof priority];
+
+        if (nextPriority > currentPriority) {
+          states[letter] = state as LetterStates[string];
+        }
+      }
+    }
+
     return states;
   }, [guesses]);
 
@@ -129,21 +204,35 @@ export default function App() {
 
   const triggerShake = useCallback(() => {
     shakeOffset.value = withSequence(
-      withTiming(-8, { duration: 50 }),
-      withTiming(8, { duration: 50 }),
-      withTiming(-6, { duration: 50 }),
-      withTiming(6, { duration: 50 }),
-      withTiming(-3, { duration: 50 }),
-      withTiming(3, { duration: 50 }),
+      withTiming(-4, { duration: 50 }),
+      withTiming(4, { duration: 50 }),
+      withTiming(-2, { duration: 50 }),
+      withTiming(2, { duration: 50 }),
       withTiming(0, { duration: 50 }),
     );
-    if (hapticsEnabled)
+
+    if (hapticsEnabled) {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-  }, [hapticsEnabled]);
+    }
+  }, [hapticsEnabled, shakeOffset]);
+
+  const handleIconPress = useCallback(
+    (callback: () => void) => {
+      if (hapticsEnabled) {
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+      }
+
+      callback();
+    },
+    [hapticsEnabled],
+  );
 
   const onKey = useCallback(
     (key: string) => {
-      if (gameOver) return;
+      if (!target || gameOver) {
+        return;
+      }
+
       setError(null);
 
       if (key === "ENTER") {
@@ -153,144 +242,174 @@ export default function App() {
           return;
         }
 
-        const normalized = normalize(current);
-        if (!isValidWord(normalized, WORDS)) {
+        const normalizedGuess = normalize(current);
+
+        if (!isValidWord(normalizedGuess, WORDS)) {
           triggerShake();
-          setError("Palavra não encontrada");
+          setError("Palavra nao encontrada");
           return;
         }
 
-        const evalRes = evaluateGuess(normalized, target);
-        setGuesses((prev) => [...prev, { word: normalized, eval: evalRes }]);
+        const evaluation = evaluateGuess(normalizedGuess, target);
+
+        setGuesses((previousGuesses) => [
+          ...previousGuesses,
+          { word: normalizedGuess, eval: evaluation },
+        ]);
         setCurrent("");
         setFlipRowIndex(guesses.length);
-        if (hapticsEnabled)
+
+        if (hapticsEnabled) {
           Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+        }
+
         return;
       }
 
       if (key === "DEL") {
-        setCurrent((prev) => prev.slice(0, -1));
+        setCurrent((previous) => previous.slice(0, -1));
         return;
       }
 
-      setCurrent((prev) => {
-        if (prev.length >= WORD_LENGTH) {
-          if (hapticsEnabled)
+      setCurrent((previous) => {
+        if (previous.length >= WORD_LENGTH) {
+          if (hapticsEnabled) {
             Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-          return prev;
+          }
+
+          return previous;
         }
-        if (hapticsEnabled)
+
+        if (hapticsEnabled) {
           Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-        return prev + key;
+        }
+
+        return previous + key;
       });
     },
-    [current, target, gameOver, guesses.length, triggerShake, hapticsEnabled],
+    [current, gameOver, guesses.length, hapticsEnabled, target, triggerShake],
   );
 
   const restart = useCallback(() => {
-    setTarget(getRandomWord(WORDS));
     setGuesses([]);
     setCurrent("");
     setError(null);
     setFlipRowIndex(-1);
   }, []);
 
-  const board = useMemo<BoardRow[]>(() => {
-    const rows = [...guesses];
-    if (rows.length < MAX_GUESSES) {
-      rows.push({ word: current, eval: Array(WORD_LENGTH).fill("active") });
-    }
-    while (rows.length < MAX_GUESSES) {
-      rows.push({ word: "", eval: Array(WORD_LENGTH).fill("empty") });
-    }
-    return rows;
-  }, [guesses, current]);
+  const clearLocalData = useCallback(async () => {
+    setGameReady(false);
 
-  if (!fontsLoaded) {
+    try {
+      await clearDailyWordStorage();
+      await loadDailyWord();
+    } catch (clearError) {
+      console.error("Failed to reset local data:", clearError);
+      setError("Nao foi possivel limpar os dados locais");
+    } finally {
+      setGameReady(true);
+    }
+  }, [loadDailyWord]);
+
+  const board = useMemo<BoardRow[]>(() => {
+    const nextRows = [...guesses];
+
+    if (nextRows.length < MAX_GUESSES) {
+      nextRows.push({ word: current, eval: Array(WORD_LENGTH).fill("active") });
+    }
+
+    while (nextRows.length < MAX_GUESSES) {
+      nextRows.push({ word: "", eval: Array(WORD_LENGTH).fill("empty") });
+    }
+
+    return nextRows;
+  }, [current, guesses]);
+
+  if (!fontsLoaded || !gameReady) {
     return (
       <SafeAreaView style={styles.center}>
-        <ActivityIndicator />
+        <ActivityIndicator size="large" color={theme.primary} />
       </SafeAreaView>
     );
   }
 
-  const palette = darkMode ? DARK_PALETTE : PALETTE;
-
   return (
-    <SafeAreaView
-      style={[styles.container, { backgroundColor: palette.surface }]}
-    >
+    <SafeAreaView style={styles.container}>
       <StatusBar style={darkMode ? "light" : "dark"} />
-
       <View style={styles.header}>
         <View style={styles.headerSide}>
           <Pressable
-            onPress={() => {
-              if (hapticsEnabled)
-                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-              setShowSettings(true);
-            }}
-            style={styles.helpButton}
-            accessibilityLabel="Configurações"
+            onPress={() => handleIconPress(() => setShowSettings(true))}
+            style={styles.iconButton}
+            accessibilityLabel="Abrir configuracoes"
             accessibilityRole="button"
           >
-            <Text style={styles.helpButtonText}>⚙️</Text>
+            <MaterialCommunityIcons
+              name="tune-variant"
+              size={20}
+              color={theme.text}
+            />
           </Pressable>
         </View>
+
         <View style={styles.headerCenter}>
-          {__DEV__ && (
+          {debugMode || __DEV__ ? (
             <View style={styles.debugContainer}>
-              <Text style={styles.debugText}>{target}</Text>
+              <Text style={styles.debugText}>{`${activeDate}  ${target}`}</Text>
             </View>
-          )}
+          ) : null}
         </View>
+
         <View style={styles.headerSide}>
           <Pressable
-            onPress={() => {
-              if (hapticsEnabled)
-                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-              setShowTutorial(true);
-            }}
-            style={styles.helpButton}
-            accessibilityLabel="Como jogar"
+            onPress={() => handleIconPress(() => setShowTutorial(true))}
+            style={styles.iconButton}
+            accessibilityLabel="Abrir instrucoes"
             accessibilityRole="button"
           >
-            <Text style={styles.helpButtonText}>?</Text>
+            <MaterialCommunityIcons
+              name="help-circle-outline"
+              size={20}
+              color={theme.text}
+            />
           </Pressable>
         </View>
       </View>
 
       <Animated.View style={[styles.boardWrapper, shakeStyle]}>
-        <Board board={board} flipRowIndex={flipRowIndex} />
+        <Board board={board} flipRowIndex={flipRowIndex} theme={theme} />
       </Animated.View>
 
       <View style={styles.bottomArea}>
-        {error && (
+        {error ? (
           <View style={styles.errorBanner}>
             <Text style={styles.errorText}>{error}</Text>
           </View>
-        )}
+        ) : null}
+
         <Keyboard
           onKeyPress={onKey}
           letterStates={letterStates}
           hapticsEnabled={hapticsEnabled}
+          theme={theme}
         />
       </View>
 
-      {gameOver && (
+      {gameOver ? (
         <GameOverModal
           won={won}
           target={target}
           onRestart={restart}
           hapticsEnabled={hapticsEnabled}
+          theme={theme}
         />
-      )}
+      ) : null}
 
       <TutorialModal
         visible={showTutorial}
         onClose={() => setShowTutorial(false)}
         hapticsEnabled={hapticsEnabled}
+        theme={theme}
       />
 
       <SettingsModal
@@ -301,6 +420,13 @@ export default function App() {
         hapticsEnabled={hapticsEnabled}
         onHapticsChange={setHapticsEnabled}
         globalHapticsEnabled={hapticsEnabled}
+        debugMode={debugMode}
+        onDebugModeChange={setDebugMode}
+        onClearLocalData={clearLocalData}
+        activeDate={activeDate}
+        dailySeedBaseDate={getDailySeedBaseDate()}
+        dailySeedFinalDate={getDailySeedFinalDate()}
+        theme={theme}
       />
     </SafeAreaView>
   );

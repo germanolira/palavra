@@ -1,19 +1,17 @@
 import React from "react";
-import { View, Text, Pressable } from "react-native";
-import Animated, {
-  useSharedValue,
-  useAnimatedStyle,
-  withTiming,
-  interpolate,
-} from "react-native-reanimated";
+import { Pressable, Text, View } from "react-native";
 import * as Haptics from "expo-haptics";
-import { styles } from "../styles/AppStyles";
+
+import type { AppTheme } from "../constants/theme";
+import { createAppStyles } from "../styles/AppStyles";
+import BottomSheetModal from "./BottomSheetModal";
 
 interface GameOverModalProps {
   won: boolean;
   target: string;
   onRestart: () => void;
   hapticsEnabled?: boolean;
+  theme: AppTheme;
 }
 
 export default function GameOverModal({
@@ -21,50 +19,42 @@ export default function GameOverModal({
   target,
   onRestart,
   hapticsEnabled = true,
+  theme,
 }: GameOverModalProps) {
-  const progress = useSharedValue(0);
+  const styles = React.useMemo(() => createAppStyles(theme), [theme]);
 
   React.useEffect(() => {
-    progress.value = withTiming(1, { duration: 350 });
-    if (hapticsEnabled) {
-      Haptics.notificationAsync(
-        won
-          ? Haptics.NotificationFeedbackType.Success
-          : Haptics.NotificationFeedbackType.Error,
-      );
+    if (!hapticsEnabled) {
+      return;
     }
-  }, [won, hapticsEnabled]);
 
-  const overlayStyle = useAnimatedStyle(() => ({
-    opacity: progress.value,
-  }));
-
-  const modalStyle = useAnimatedStyle(() => ({
-    opacity: progress.value,
-    transform: [
-      { scale: interpolate(progress.value, [0, 1], [0.85, 1]) },
-      { translateY: interpolate(progress.value, [0, 1], [20, 0]) },
-    ],
-  }));
+    Haptics.notificationAsync(
+      won
+        ? Haptics.NotificationFeedbackType.Success
+        : Haptics.NotificationFeedbackType.Error,
+    );
+  }, [hapticsEnabled, won]);
 
   return (
-    <Animated.View style={[styles.overlay, overlayStyle]}>
-      <Animated.View style={[styles.modal, modalStyle]}>
-        <Text style={styles.modalTitle}>
-          {won ? "🎉 Parabéns!" : "😢 Fim de jogo"}
-        </Text>
+    <BottomSheetModal
+      visible
+      title={won ? "Voce venceu" : "Fim de jogo"}
+      theme={theme}
+      hapticsEnabled={hapticsEnabled}
+      dismissible={false}
+    >
+      <View style={styles.sectionCard}>
         <Text style={styles.modalText}>
-          {won ? "Você acertou a palavra!" : "A palavra correta era:"}
+          {won
+            ? "Boa. Voce encontrou a palavra certa e fechou a rodada."
+            : "A rodada terminou. A resposta correta desta vez era:"}
         </Text>
         <Text style={styles.modalWord}>{target}</Text>
-        <Pressable
-          onPress={onRestart}
-          style={styles.button}
-          accessibilityRole="button"
-        >
-          <Text style={styles.buttonText}>Jogar novamente</Text>
-        </Pressable>
-      </Animated.View>
-    </Animated.View>
+      </View>
+
+      <Pressable onPress={onRestart} style={styles.primaryButton} accessibilityRole="button">
+        <Text style={styles.primaryButtonText}>Repetir rodada</Text>
+      </Pressable>
+    </BottomSheetModal>
   );
 }

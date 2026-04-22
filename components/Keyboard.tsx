@@ -1,22 +1,26 @@
 import React from "react";
-import { View, Text, Pressable, useWindowDimensions } from "react-native";
+import { Pressable, Text, View, useWindowDimensions } from "react-native";
+import * as Haptics from "expo-haptics";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 import Animated, {
-  useSharedValue,
   useAnimatedStyle,
+  useSharedValue,
   withSpring,
 } from "react-native-reanimated";
-import * as Haptics from "expo-haptics";
-import { styles } from "../styles/AppStyles";
+
+import type { AppTheme } from "../constants/theme";
 import { KEYBOARD_ROWS } from "../constants/words";
+import { createAppStyles } from "../styles/AppStyles";
 import type { LetterStates } from "../types";
 
 interface KeyboardProps {
   onKeyPress: (key: string) => void;
   letterStates: LetterStates;
   hapticsEnabled?: boolean;
+  theme: AppTheme;
 }
 
-function getKeyStyle(state: string | undefined) {
+function getKeyStyle(state: string | undefined, styles: ReturnType<typeof createAppStyles>) {
   switch (state) {
     case "correct":
       return styles.keyCorrect;
@@ -35,35 +39,37 @@ function KeyButton({
   onPress,
   flex = 1,
   hapticsEnabled = true,
+  theme,
 }: {
   label: string;
   state?: string;
   onPress: () => void;
   flex?: number;
   hapticsEnabled?: boolean;
+  theme: AppTheme;
 }) {
+  const styles = React.useMemo(() => createAppStyles(theme), [theme]);
   const scale = useSharedValue(1);
-
-  const animatedStyle = useAnimatedStyle(() => {
-    return {
-      transform: [{ scale: scale.value }],
-    };
-  });
-
-  const handlePressIn = () => {
-    scale.value = withSpring(0.92, { stiffness: 400, damping: 15 });
-    if (hapticsEnabled) Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-  };
-
-  const handlePressOut = () => {
-    scale.value = withSpring(1, { stiffness: 400, damping: 15 });
-  };
-
   const { width } = useWindowDimensions();
   const keyHeight = Math.max(46, width * 0.115);
   const fontSize = Math.max(12, width * 0.032);
-
   const isSpecial = label === "ENTER" || label === "DEL";
+
+  const animatedStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: scale.value }],
+  }));
+
+  const handlePressIn = () => {
+    scale.value = withSpring(0.94, { stiffness: 380, damping: 18 });
+
+    if (hapticsEnabled) {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    }
+  };
+
+  const handlePressOut = () => {
+    scale.value = withSpring(1, { stiffness: 380, damping: 18 });
+  };
 
   return (
     <Animated.View style={[{ flex }, animatedStyle]}>
@@ -73,19 +79,18 @@ function KeyButton({
         onPressOut={handlePressOut}
         style={[
           styles.key,
-          getKeyStyle(state),
-          {
-            height: keyHeight,
-            borderRadius: keyHeight * 0.15,
-          },
-          isSpecial && styles.keySpecial,
+          getKeyStyle(state, styles),
+          isSpecial ? styles.keySpecial : null,
+          { height: keyHeight, borderRadius: keyHeight * 0.24 },
         ]}
         accessibilityLabel={label}
         accessibilityRole="button"
       >
-        <Text style={[styles.keyText, { fontSize }]}>
-          {label === "DEL" ? "⌫" : label}
-        </Text>
+        {label === "DEL" ? (
+          <MaterialCommunityIcons name="backspace-outline" size={18} color={theme.text} />
+        ) : (
+          <Text style={[styles.keyText, { fontSize }]}>{label}</Text>
+        )}
       </Pressable>
     </Animated.View>
   );
@@ -95,14 +100,16 @@ export default function Keyboard({
   onKeyPress,
   letterStates,
   hapticsEnabled = true,
+  theme,
 }: KeyboardProps) {
+  const styles = React.useMemo(() => createAppStyles(theme), [theme]);
   const { width } = useWindowDimensions();
   const gap = Math.max(5, width * 0.012);
 
   return (
     <View style={[styles.keyboard, { gap, paddingHorizontal: gap }]}>
-      {KEYBOARD_ROWS.map((row, i) => (
-        <View key={i} style={[styles.keyRow, { gap }]}>
+      {KEYBOARD_ROWS.map((row, rowIndex) => (
+        <View key={rowIndex} style={[styles.keyRow, { gap }]}>
           {row.map((key) => (
             <KeyButton
               key={key}
@@ -111,6 +118,7 @@ export default function Keyboard({
               onPress={() => onKeyPress(key)}
               flex={key === "ENTER" || key === "DEL" ? 1.5 : 1}
               hapticsEnabled={hapticsEnabled}
+              theme={theme}
             />
           ))}
         </View>

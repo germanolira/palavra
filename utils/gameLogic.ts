@@ -2,7 +2,12 @@ import { WORD_LENGTH } from '../constants/words';
 import type { TileState } from '../types';
 
 export function normalize(text: string): string {
-  return text.toUpperCase().replace(/[^A-Z]/g, '').slice(0, WORD_LENGTH);
+  return text
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toUpperCase()
+    .replace(/[^A-Z]/g, "")
+    .slice(0, WORD_LENGTH);
 }
 
 export function evaluateGuess(guess: string, target: string): TileState[] {
