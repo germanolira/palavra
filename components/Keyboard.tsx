@@ -1,5 +1,6 @@
 import React from "react";
 import { Pressable, Text, View, useWindowDimensions } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import * as Haptics from "expo-haptics";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import Animated, {
@@ -104,10 +105,30 @@ export default function Keyboard({
 }: KeyboardProps) {
   const styles = React.useMemo(() => createAppStyles(theme), [theme]);
   const { width } = useWindowDimensions();
+  const insets = useSafeAreaInsets();
+  
+  // Responsive gap based on device width
   const gap = Math.max(5, width * 0.012);
+  
+  // Horizontal padding: responsive with minimum of 12px, max 5% of width
+  const horizontalPadding = Math.max(12, Math.min(width * 0.05, 24));
+  
+  // Vertical padding: inset bottom + 12px minimum, top 8px
+  const verticalPaddingBottom = Math.max(12, insets.bottom + 8);
+  const verticalPaddingTop = 8;
 
   return (
-    <View style={[styles.keyboard, { gap, paddingHorizontal: gap }]}>
+    <View
+      style={[
+        styles.keyboard,
+        {
+          gap,
+          paddingHorizontal: horizontalPadding,
+          paddingTop: verticalPaddingTop,
+          paddingBottom: verticalPaddingBottom,
+        },
+      ]}
+    >
       {KEYBOARD_ROWS.map((row, rowIndex) => (
         <View key={rowIndex} style={[styles.keyRow, { gap }]}>
           {row.map((key) => (

@@ -103,8 +103,7 @@ export function createAppStyles(theme: AppTheme) {
     },
 
     bottomArea: {
-      paddingTop: 10,
-      paddingBottom: 18,
+      paddingTop: 8,
       flexShrink: 0,
     },
 
@@ -353,6 +352,61 @@ export function createAppStyles(theme: AppTheme) {
       fontSize: 14,
       lineHeight: 21,
       color: theme.textMuted,
+    },
+
+    // Modal improvements
+    modalHeader: {
+      alignItems: "center",
+      marginBottom: 20,
+      gap: 8,
+    },
+    modalTitle: {
+      fontFamily: "BeVietnamPro_700Bold",
+      fontSize: 24,
+      color: theme.text,
+      textAlign: "center",
+    },
+    modalSubtitle: {
+      fontFamily: "BeVietnamPro_500Medium",
+      fontSize: 14,
+      color: theme.textMuted,
+      textAlign: "center",
+    },
+    gameOverEmoji: {
+      fontSize: 48,
+      marginBottom: 8,
+    },
+    gameOverWord: {
+      fontFamily: "BeVietnamPro_700Bold",
+      fontSize: 32,
+      color: theme.primary,
+      textAlign: "center",
+      marginVertical: 12,
+      letterSpacing: 2,
+    },
+    sectionDivider: {
+      height: 1,
+      backgroundColor: theme.border,
+      marginVertical: 16,
+    },
+    buttonRow: {
+      flexDirection: "row",
+      gap: 10,
+      marginTop: 16,
+    },
+    primaryButtonLarge: {
+      backgroundColor: theme.primary,
+      paddingVertical: 16,
+      paddingHorizontal: 28,
+      borderRadius: 14,
+      alignItems: "center",
+      justifyContent: "center",
+      minHeight: 56,
+    },
+    primaryButtonLargeText: {
+      fontFamily: "BeVietnamPro_700Bold",
+      fontSize: 18,
+      color: theme.textOnPrimary,
     },
 
     debugContainer: {

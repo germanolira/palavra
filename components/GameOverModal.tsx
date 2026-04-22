@@ -43,17 +43,26 @@ export default function GameOverModal({
       hapticsEnabled={hapticsEnabled}
       dismissible={false}
     >
+      <View style={styles.modalHeader}>
+        <Text style={styles.gameOverEmoji}>{won ? "🎉" : "😢"}</Text>
+      </View>
+
       <View style={styles.sectionCard}>
         <Text style={styles.modalText}>
           {won
-            ? "Boa. Voce encontrou a palavra certa e fechou a rodada."
-            : "A rodada terminou. A resposta correta desta vez era:"}
+            ? "Parabens! Voce encontrou a palavra certa."
+            : "A rodada terminou. A resposta era:"}
         </Text>
-        <Text style={styles.modalWord}>{target}</Text>
+        <Text style={styles.gameOverWord}>{target}</Text>
+        <Text style={styles.rowDescription}>
+          {won
+            ? "Continue tentando amanha para manter sua sequencia!"
+            : "Nao desista, tente novamente amanha com uma nova palavra!"}
+        </Text>
       </View>
 
-      <Pressable onPress={onRestart} style={styles.primaryButton} accessibilityRole="button">
-        <Text style={styles.primaryButtonText}>Repetir rodada</Text>
+      <Pressable onPress={onRestart} style={styles.primaryButtonLarge} accessibilityRole="button">
+        <Text style={styles.primaryButtonLargeText}>Proxima rodada</Text>
       </Pressable>
     </BottomSheetModal>
   );
