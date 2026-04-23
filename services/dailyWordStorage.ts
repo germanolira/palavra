@@ -1,163 +1,64 @@
-import * as SQLite from "expo-sqlite";
+import { dailySeed, SeedWord } from "../data/dailySeed";
 
-import dailySeed from "../data/dailySeed.json";
-
-const DATABASE_NAME = "palavra.db";
-const DAILY_WORDS_TABLE = "daily_words";
-const SEEDED_META_KEY = "daily_words_seeded_at";
-const META_TABLE = "app_meta";
-const TOTAL_DAYS = 365;
-
-type DailyWordRow = {
-  date: string;
-  word: string;
-};
-
-type CountRow = {
-  count: number;
-};
-
-type MetaRow = {
-  value: string;
-};
-
-function getDatabase() {
-  return SQLite.openDatabaseAsync(DATABASE_NAME);
-}
+const BASE_DATE = dailySeed.baseDate;
+const SCHEDULED_WORDS = dailySeed.words;
 
 function formatDateKey(date: Date) {
   const year = date.getFullYear();
   const month = `${date.getMonth() + 1}`.padStart(2, "0");
   const day = `${date.getDate()}`.padStart(2, "0");
-
   return `${year}-${month}-${day}`;
-}
-
-function addDays(dateKey: string, days: number) {
-  const date = new Date(`${dateKey}T12:00:00`);
-  date.setDate(date.getDate() + days);
-  return formatDateKey(date);
 }
 
 function getDayDifference(fromDateKey: string, toDateKey: string) {
   const fromDate = new Date(`${fromDateKey}T12:00:00`);
   const toDate = new Date(`${toDateKey}T12:00:00`);
-  const differenceInMs = toDate.getTime() - fromDate.getTime();
-
-  return Math.floor(differenceInMs / (1000 * 60 * 60 * 24));
+  const diffMs = toDate.getTime() - fromDate.getTime();
+  return Math.floor(diffMs / (1000 * 60 * 60 * 24));
 }
 
-function buildSchedule(): DailyWordRow[] {
-  const words = dailySeed.words.map((word) => word.toUpperCase());
-  const schedule: DailyWordRow[] = [];
-  let previousWord = "";
-
-  for (let dayIndex = 0; dayIndex < TOTAL_DAYS; dayIndex += 1) {
-    const firstIndex = (dayIndex * 11 + Math.floor(dayIndex / 3)) % words.length;
-    let word = words[firstIndex];
-
-    if (word === previousWord) {
-      word = words[(firstIndex + 7) % words.length];
-    }
-
-    previousWord = word;
-    schedule.push({
-      date: addDays(dailySeed.baseDate, dayIndex),
-      word,
-    });
-  }
-
-  return schedule;
+export function getBaseDate() {
+  return BASE_DATE;
 }
 
-export function getDailySeedBaseDate() {
-  return dailySeed.baseDate;
-}
-
-export function getDailySeedFinalDate() {
-  return addDays(dailySeed.baseDate, TOTAL_DAYS - 1);
+export function getFinalDate() {
+  const finalIndex = SCHEDULED_WORDS.length - 1;
+  const date = new Date(`${BASE_DATE}T12:00:00`);
+  date.setDate(date.getDate() + finalIndex);
+  return formatDateKey(date);
 }
 
 export function getTodayDateKey() {
   return formatDateKey(new Date());
 }
 
-export async function initializeDailyWordStorage() {
-  const db = await getDatabase();
+export function getWordForDate(date: string): string | null {
+  const dayIndex = getDayDifference(BASE_DATE, date);
 
-  await db.execAsync(`
-    PRAGMA journal_mode = WAL;
-    CREATE TABLE IF NOT EXISTS ${DAILY_WORDS_TABLE} (
-      date TEXT PRIMARY KEY NOT NULL,
-      word TEXT NOT NULL
-    );
-    CREATE TABLE IF NOT EXISTS ${META_TABLE} (
-      key TEXT PRIMARY KEY NOT NULL,
-      value TEXT NOT NULL
-    );
-  `);
-
-  const existingRows =
-    (await db.getFirstAsync<CountRow>(
-      `SELECT COUNT(*) as count FROM ${DAILY_WORDS_TABLE}`
-    )) ?? { count: 0 };
-  const seededMeta = await db.getFirstAsync<MetaRow>(
-    `SELECT value FROM ${META_TABLE} WHERE key = ?`,
-    SEEDED_META_KEY,
-  );
-
-  if (existingRows.count === TOTAL_DAYS && seededMeta?.value === dailySeed.baseDate) {
-    return;
+  if (dayIndex < 0 || dayIndex >= SCHEDULED_WORDS.length) {
+    return null;
   }
 
-  const schedule = buildSchedule();
-
-  await db.withTransactionAsync(async () => {
-    await db.runAsync(`DELETE FROM ${DAILY_WORDS_TABLE}`);
-    await db.runAsync(`DELETE FROM ${META_TABLE} WHERE key = ?`, SEEDED_META_KEY);
-
-    for (const row of schedule) {
-      await db.runAsync(
-        `INSERT INTO ${DAILY_WORDS_TABLE} (date, word) VALUES (?, ?)`,
-        row.date,
-        row.word,
-      );
-    }
-
-    await db.runAsync(
-      `INSERT INTO ${META_TABLE} (key, value) VALUES (?, ?)`,
-      SEEDED_META_KEY,
-      dailySeed.baseDate,
-    );
-  });
+  return SCHEDULED_WORDS[dayIndex].word;
 }
 
-export async function getWordForDate(date: string) {
-  const db = await getDatabase();
-  const directRow = await db.getFirstAsync<DailyWordRow>(
-    `SELECT date, word FROM ${DAILY_WORDS_TABLE} WHERE date = ?`,
-    date,
-  );
+export function getTodayWord(): string | null {
+  return getWordForDate(getTodayDateKey());
+}
 
-  if (directRow?.word) {
-    return directRow.word;
+export function getTotalDays() {
+  return SCHEDULED_WORDS.length;
+}
+
+export function getDayIndexForDate(date: string): number {
+  return getDayDifference(BASE_DATE, date);
+}
+
+export function getSeedWordForDate(date: string): SeedWord | null {
+  const dayIndex = getDayDifference(BASE_DATE, date);
+  if (dayIndex < 0 || dayIndex >= SCHEDULED_WORDS.length) {
+    return null;
   }
-
-  const normalizedIndex =
-    ((getDayDifference(dailySeed.baseDate, date) % TOTAL_DAYS) + TOTAL_DAYS) % TOTAL_DAYS;
-  const fallbackDate = addDays(dailySeed.baseDate, normalizedIndex);
-  const fallbackRow = await db.getFirstAsync<DailyWordRow>(
-    `SELECT date, word FROM ${DAILY_WORDS_TABLE} WHERE date = ?`,
-    fallbackDate,
-  );
-
-  return fallbackRow?.word ?? null;
+  return SCHEDULED_WORDS[dayIndex];
 }
 
-export async function clearDailyWordStorage() {
-  const db = await getDatabase();
-  await db.execAsync(`
-    DROP TABLE IF EXISTS ${DAILY_WORDS_TABLE};
-    DROP TABLE IF EXISTS ${META_TABLE};
-  `);
-}

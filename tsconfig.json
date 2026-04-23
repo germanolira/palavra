@@ -15,7 +15,7 @@
     "strict": true,
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
-    "types": ["react", "react-native"]
+    "types": ["react", "react-native", "jest"]
   },
   "include": [
     "**/*.ts",
