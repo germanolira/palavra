@@ -24,7 +24,7 @@ import Animated, {
 } from "react-native-reanimated";
 
 import Board from "./components/Board";
-import GameOverModal from "./components/GameOverModal";
+import VictoryScreen from "./components/VictoryScreen";
 import Keyboard from "./components/Keyboard";
 import SettingsModal from "./components/SettingsModal";
 import TutorialModal from "./components/TutorialModal";
@@ -369,10 +369,9 @@ export default function App() {
       </View>
 
       {gameOver ? (
-        <GameOverModal
+        <VictoryScreen
           won={won}
           target={target}
-          onRestart={restart}
           hapticsEnabled={hapticsEnabled}
           theme={theme}
         />
