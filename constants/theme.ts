@@ -8,6 +8,7 @@ export interface AppTheme {
   colorCorrect: string;
   colorPresent: string;
   colorAbsent: string;
+  colorAbsentKey: string;
   colorError: string;
   overlay: string;
 }
@@ -21,7 +22,8 @@ export const LIGHT_THEME: AppTheme = {
   borderBase: "#c3c8be",
   colorCorrect: "#2d4a2b",
   colorPresent: "#d97706",
-  colorAbsent: "#6b7280",
+  colorAbsent: "#312a2c",
+  colorAbsentKey: "#c4bfb8",
   colorError: "#ba1a1a",
   overlay: "rgba(28, 28, 22, 0.48)",
 } as const;
@@ -36,6 +38,7 @@ export const DARK_THEME: AppTheme = {
   colorCorrect: "#6a9a5e",
   colorPresent: "#c27f2e",
   colorAbsent: "#52525b",
+  colorAbsentKey: "#52525b",
   colorError: "#ffdad6",
   overlay: "rgba(0, 0, 0, 0.62)",
 } as const;

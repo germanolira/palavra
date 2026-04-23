@@ -13,6 +13,12 @@ import {
   BeVietnamPro_600SemiBold,
   BeVietnamPro_700Bold,
 } from "@expo-google-fonts/be-vietnam-pro";
+import {
+  Inter_400Regular,
+  Inter_500Medium,
+  Inter_600SemiBold,
+  Inter_700Bold,
+} from "@expo-google-fonts/inter";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import { StatusBar } from "expo-status-bar";
@@ -53,6 +59,10 @@ export default function App() {
     BeVietnamPro_500Medium,
     BeVietnamPro_600SemiBold,
     BeVietnamPro_700Bold,
+    Inter_400Regular,
+    Inter_500Medium,
+    Inter_600SemiBold,
+    Inter_700Bold,
   });
 
   const [target, setTarget] = useState("");

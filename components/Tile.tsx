@@ -64,15 +64,15 @@ export default function Tile({
   const stateStyle = React.useMemo(() => {
     switch (state) {
       case "correct":
-        return styles.correct;
+        return { tileStyle: styles.correct, textStyle: styles.correctText };
       case "present":
-        return styles.present;
+        return { tileStyle: styles.present, textStyle: styles.presentText };
       case "absent":
-        return styles.absent;
+        return { tileStyle: styles.absent, textStyle: styles.absentText };
       case "active":
-        return styles.active;
+        return { tileStyle: styles.active, textStyle: null };
       default:
-        return styles.empty;
+        return { tileStyle: styles.empty, textStyle: null };
     }
   }, [state, styles]);
 
@@ -80,12 +80,12 @@ export default function Tile({
     <Animated.View
       style={[
         styles.tile,
-        stateStyle,
+        stateStyle.tileStyle,
         animatedStyle,
         { width: tileSize, height: tileSize, borderRadius: tileSize * 0.18 },
       ]}
     >
-      <Text style={[styles.tileText, { fontSize }]}>{letter}</Text>
+      <Text style={[styles.tileText, stateStyle.textStyle, { fontSize }]}>{letter}</Text>
     </Animated.View>
   );
 }

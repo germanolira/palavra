@@ -24,13 +24,13 @@ interface KeyboardProps {
 function getKeyStyle(state: string | undefined, styles: ReturnType<typeof createAppStyles>) {
   switch (state) {
     case "correct":
-      return styles.keyCorrect;
+      return { keyStyle: styles.keyCorrect, textStyle: styles.keyCorrectText };
     case "present":
-      return styles.keyPresent;
+      return { keyStyle: styles.keyPresent, textStyle: styles.keyPresentText };
     case "absent":
-      return styles.keyAbsent;
+      return { keyStyle: styles.keyAbsent, textStyle: styles.keyAbsentText };
     default:
-      return null;
+      return { keyStyle: null, textStyle: null };
   }
 }
 
@@ -55,6 +55,7 @@ function KeyButton({
   const keyHeight = Math.max(46, width * 0.115);
   const fontSize = Math.max(12, width * 0.032);
   const isSpecial = label === "ENTER" || label === "DEL";
+  const { keyStyle, textStyle } = getKeyStyle(state, styles);
 
   const animatedStyle = useAnimatedStyle(() => ({
     transform: [{ scale: scale.value }],
@@ -80,7 +81,7 @@ function KeyButton({
         onPressOut={handlePressOut}
         style={[
           styles.key,
-          getKeyStyle(state, styles),
+          keyStyle,
           isSpecial ? styles.keySpecial : null,
           { height: keyHeight, borderRadius: keyHeight * 0.24 },
         ]}
@@ -88,11 +89,11 @@ function KeyButton({
         accessibilityRole="button"
       >
         {label === "DEL" ? (
-          <MaterialCommunityIcons name="backspace-outline" size={18} color={theme.textMain} />
+          <MaterialCommunityIcons name="backspace-outline" size={18} color={textStyle ? theme.textInverse : theme.textMain} />
         ) : label === "ENTER" ? (
-          <MaterialCommunityIcons name="keyboard-return" size={18} color={theme.textMain} />
+          <MaterialCommunityIcons name="keyboard-return" size={18} color={textStyle ? theme.textInverse : theme.textMain} />
         ) : (
-          <Text style={[styles.keyText, { fontSize }]}>{label}</Text>
+          <Text style={[styles.keyText, textStyle, { fontSize }]}>{label}</Text>
         )}
       </Pressable>
     </Animated.View>

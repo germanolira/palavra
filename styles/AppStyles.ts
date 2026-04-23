@@ -33,7 +33,7 @@ export function createAppStyles(theme: AppTheme) {
       justifyContent: "center",
     },
     headerTitle: {
-      fontFamily: "BeVietnamPro_700Bold",
+      fontFamily: "Inter_700Bold",
       fontSize: 20,
       letterSpacing: 6,
       color: theme.textMain,
@@ -107,13 +107,22 @@ export function createAppStyles(theme: AppTheme) {
       backgroundColor: theme.colorCorrect,
       borderColor: theme.colorCorrect,
     },
+    correctText: {
+      color: theme.textInverse,
+    },
     present: {
       backgroundColor: theme.colorPresent,
       borderColor: theme.colorPresent,
     },
+    presentText: {
+      color: theme.textInverse,
+    },
     absent: {
       backgroundColor: theme.colorAbsent,
       borderColor: theme.colorAbsent,
+    },
+    absentText: {
+      color: theme.textInverse,
     },
     active: {
       backgroundColor: theme.bgBase,
@@ -154,13 +163,22 @@ export function createAppStyles(theme: AppTheme) {
       backgroundColor: theme.colorCorrect,
       borderColor: theme.colorCorrect,
     },
+    keyCorrectText: {
+      color: theme.textInverse,
+    },
     keyPresent: {
       backgroundColor: theme.colorPresent,
       borderColor: theme.colorPresent,
     },
+    keyPresentText: {
+      color: theme.textInverse,
+    },
     keyAbsent: {
-      backgroundColor: theme.colorAbsent,
-      borderColor: theme.colorAbsent,
+      backgroundColor: theme.colorAbsentKey,
+      borderColor: theme.colorAbsentKey,
+    },
+    keyAbsentText: {
+      color: theme.textInverse,
     },
 
     errorBanner: {
@@ -283,7 +301,7 @@ export function createAppStyles(theme: AppTheme) {
     },
     sheetTitle: {
       flex: 1,
-      fontFamily: "BeVietnamPro_700Bold",
+      fontFamily: "Inter_700Bold",
       fontSize: 22,
       color: theme.textMain,
     },
