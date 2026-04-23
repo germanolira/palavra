@@ -52,19 +52,19 @@ export default function GameOverModal({
         <Text style={styles.gameOverEmoji}>{won ? "🎉" : "😢"}</Text>
       </View>
 
-      <View style={styles.sectionCard}>
-        <Text style={[styles.modalText, { textAlign: "center" }]}>
-          {won
-            ? "Parabéns! Você encontrou a palavra certa."
-            : "A rodada terminou. A resposta era:"}
-        </Text>
-        <Text style={styles.gameOverWord}>{target}</Text>
-        <Text style={[styles.rowDescription, { textAlign: "center" }]}>
-          {won
-            ? "Continue jogando amanhã para manter sua sequência!"
-            : "Não desista, tente novamente amanhã com uma nova palavra!"}
-        </Text>
-      </View>
+      <Text style={[styles.modalText, { textAlign: "center" }]}>
+        {won
+          ? "Parabéns! Você encontrou a palavra certa."
+          : "A rodada terminou. A resposta era:"}
+      </Text>
+
+      <Text style={styles.modalGameOverWord}>{target}</Text>
+
+      <Text style={[styles.rowDescription, { textAlign: "center" }]}>
+        {won
+          ? "Continue jogando amanhã para manter sua sequência!"
+          : "Não desista, tente novamente amanhã com uma nova palavra!"}
+      </Text>
     </BottomSheetModal>
   );
 }

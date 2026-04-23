@@ -1,13 +1,23 @@
 import { registerRootComponent } from 'expo';
 import React from 'react';
+import { StyleSheet } from 'react-native';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import App from './App';
 
 const RootApp = () => (
-  <SafeAreaProvider>
-    <App />
-  </SafeAreaProvider>
+  <GestureHandlerRootView style={styles.container}>
+    <SafeAreaProvider>
+      <App />
+    </SafeAreaProvider>
+  </GestureHandlerRootView>
 );
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+});
 
 registerRootComponent(RootApp);

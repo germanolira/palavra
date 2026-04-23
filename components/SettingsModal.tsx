@@ -37,10 +37,10 @@ function SettingRow({
   const styles = React.useMemo(() => createAppStyles(theme), [theme]);
 
   return (
-    <View style={styles.rowBetween}>
-      <View style={styles.rowLabelBlock}>
-        <Text style={styles.rowLabel}>{label}</Text>
-        <Text style={styles.rowDescription}>{description}</Text>
+    <View style={styles.settingsListItem}>
+      <View style={styles.settingsListItemLabelBlock}>
+        <Text style={styles.settingsListItemLabel}>{label}</Text>
+        <Text style={styles.settingsListItemDescription}>{description}</Text>
       </View>
       <Switch
         value={value}
@@ -62,9 +62,6 @@ export default function SettingsModal({
   onDarkModeChange,
   hapticsEnabled,
   onHapticsChange,
-  activeDate,
-  dailySeedBaseDate,
-  dailySeedFinalDate,
   theme,
   debugMode,
   onResetDay,
@@ -84,8 +81,8 @@ export default function SettingsModal({
         </Pressable>
       }
     >
-      <View style={styles.sectionCard}>
-        <Text style={styles.sectionTitle}>Aparência</Text>
+      <View style={styles.settingsSectionFirst}>
+        <Text style={styles.settingsSectionTitle}>Aparência</Text>
         <SettingRow
           label="Modo escuro"
           description="Usa a nova paleta noturna com contraste mais suave e elegante."
@@ -95,8 +92,10 @@ export default function SettingsModal({
         />
       </View>
 
-      <View style={styles.sectionCard}>
-        <Text style={styles.sectionTitle}>Feedback</Text>
+      <View style={styles.settingsDivider} />
+
+      <View style={styles.settingsSection}>
+        <Text style={styles.settingsSectionTitle}>Feedback</Text>
         <SettingRow
           label="Haptics"
           description="Adiciona resposta tátil ao tocar no teclado e nas ações do jogo."
@@ -107,29 +106,32 @@ export default function SettingsModal({
       </View>
 
       {(__DEV__ || debugMode) && onResetDay ? (
-        <View style={styles.sectionCard}>
-          <Text style={styles.sectionTitle}>Debug</Text>
-          <Pressable
-            onPress={() => {
-              Alert.alert(
-                "Resetar dia",
-                "Tem certeza que deseja apagar as tentativas de hoje?",
-                [
-                  { text: "Cancelar", style: "cancel" },
-                  {
-                    text: "Resetar",
-                    style: "destructive",
-                    onPress: onResetDay,
-                  },
-                ],
-              );
-            }}
-            style={styles.dangerButton}
-            accessibilityRole="button"
-          >
-            <Text style={styles.dangerButtonText}>Resetar dia</Text>
-          </Pressable>
-        </View>
+        <>
+          <View style={styles.settingsDivider} />
+          <View style={styles.settingsSection}>
+            <Text style={styles.settingsSectionTitle}>Debug</Text>
+            <Pressable
+              onPress={() => {
+                Alert.alert(
+                  "Resetar dia",
+                  "Tem certeza que deseja apagar as tentativas de hoje?",
+                  [
+                    { text: "Cancelar", style: "cancel" },
+                    {
+                      text: "Resetar",
+                      style: "destructive",
+                      onPress: onResetDay,
+                    },
+                  ],
+                );
+              }}
+              style={styles.dangerButton}
+              accessibilityRole="button"
+            >
+              <Text style={styles.dangerButtonText}>Resetar dia</Text>
+            </Pressable>
+          </View>
+        </>
       ) : null}
     </BottomSheetModal>
   );

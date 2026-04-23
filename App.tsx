@@ -430,20 +430,20 @@ export default function App() {
         </View>
       </View>
 
-      {gameOver ? (
-        <View style={styles.gameOverHeader}>
-          <Text style={styles.gameOverCountdownLabel}>Próxima palavra em</Text>
-          <Text style={styles.gameOverCountdown}>
-            {countdown.hours}:{countdown.minutes}:{countdown.seconds}
-          </Text>
-        </View>
-      ) : null}
-
       <Animated.View style={[styles.boardWrapper, shakeStyle]}>
         <Board board={board} flipRowIndex={flipRowIndex} theme={theme} />
       </Animated.View>
 
       <View style={styles.bottomArea}>
+        {gameOver ? (
+          <View style={styles.gameOverHeader}>
+            <Text style={styles.gameOverCountdownLabel}>Próxima palavra em</Text>
+            <Text style={styles.gameOverCountdown}>
+              {countdown.hours}:{countdown.minutes}:{countdown.seconds}
+            </Text>
+          </View>
+        ) : null}
+
         {error ? (
           <View style={styles.errorBanner}>
             <Text style={styles.errorText}>{error}</Text>

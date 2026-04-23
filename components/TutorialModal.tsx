@@ -61,11 +61,11 @@ export default function TutorialModal({
         </Pressable>
       }
     >
-      <View style={styles.sectionCard}>
-        <Text style={styles.modalText}>
-          Descubra a palavra do dia em até 6 tentativas. Cada palpite precisa ter 5 letras válidas.
-        </Text>
-      </View>
+      <Text style={styles.modalText}>
+        Descubra a palavra do dia em até 6 tentativas. Cada palpite precisa ter 5 letras válidas.
+      </Text>
+
+      <View style={styles.settingsDivider} />
 
       <View style={styles.tutorialExamples}>
         <ExampleCard
