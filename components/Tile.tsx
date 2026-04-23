@@ -1,5 +1,5 @@
 import React from "react";
-import { Text, useWindowDimensions } from "react-native";
+import { Text } from "react-native";
 import Animated, {
   interpolate,
   useAnimatedStyle,
@@ -17,6 +17,7 @@ interface TileProps {
   state: TileState;
   index: number;
   animateFlip: boolean;
+  tileSize: number;
   theme: AppTheme;
 }
 
@@ -25,11 +26,10 @@ export default function Tile({
   state,
   index,
   animateFlip,
+  tileSize,
   theme,
 }: TileProps) {
   const styles = React.useMemo(() => createAppStyles(theme), [theme]);
-  const { width } = useWindowDimensions();
-  const tileSize = Math.min(64, (width - 48) / 5);
   const fontSize = tileSize * 0.42;
   const flipProgress = useSharedValue(0);
 

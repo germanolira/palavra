@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { ActivityIndicator, Pressable, Text, View } from "react-native";
+import { ActivityIndicator, LayoutChangeEvent, Pressable, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import {
@@ -78,6 +78,11 @@ export default function App() {
     seconds: "--",
   });
   const [debugMode, setDebugMode] = useState(false);
+  const [boardHeight, setBoardHeight] = useState(0);
+
+  const handleBoardLayout = useCallback((event: LayoutChangeEvent) => {
+    setBoardHeight(event.nativeEvent.layout.height);
+  }, []);
 
   const loadDailyWord = useCallback(
     async (forceToday = false) => {
@@ -430,8 +435,8 @@ export default function App() {
         </View>
       </View>
 
-      <Animated.View style={[styles.boardWrapper, shakeStyle]}>
-        <Board board={board} flipRowIndex={flipRowIndex} theme={theme} />
+      <Animated.View style={[styles.boardWrapper, shakeStyle]} onLayout={handleBoardLayout}>
+        <Board board={board} flipRowIndex={flipRowIndex} maxHeight={boardHeight} theme={theme} />
       </Animated.View>
 
       <View style={styles.bottomArea}>

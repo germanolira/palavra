@@ -52,7 +52,7 @@ function KeyButton({
   const styles = React.useMemo(() => createAppStyles(theme), [theme]);
   const scale = useSharedValue(1);
   const { width } = useWindowDimensions();
-  const keyHeight = Math.max(46, width * 0.115);
+  const keyHeight = Math.max(42, width * 0.105);
   const fontSize = Math.max(12, width * 0.032);
   const isSpecial = label === "ENTER" || label === "DEL";
   const { keyStyle, textStyle } = getKeyStyle(state, styles);
@@ -117,8 +117,8 @@ export default function Keyboard({
   const horizontalPadding = Math.max(12, Math.min(width * 0.05, 24));
   
   // Vertical padding: inset bottom + 12px minimum, top 8px
-  const verticalPaddingBottom = Math.max(12, insets.bottom + 8);
-  const verticalPaddingTop = 8;
+  const verticalPaddingBottom = Math.max(8, insets.bottom);
+  const verticalPaddingTop = 4;
 
   return (
     <View

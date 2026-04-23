@@ -7,7 +7,7 @@ export function createAppStyles(theme: AppTheme) {
     container: {
       flex: 1,
       backgroundColor: theme.bgBase,
-      paddingTop: 12,
+      paddingTop: 4,
     },
     center: {
       flex: 1,
@@ -24,8 +24,8 @@ export function createAppStyles(theme: AppTheme) {
       alignItems: "center",
       justifyContent: "space-between",
       paddingHorizontal: 18,
-      paddingBottom: 12,
-      minHeight: 56,
+      paddingBottom: 4,
+      minHeight: 44,
     },
     headerSide: {
       width: 48,
@@ -133,7 +133,7 @@ export function createAppStyles(theme: AppTheme) {
     },
 
     bottomArea: {
-      paddingTop: 8,
+      paddingTop: 4,
       flexShrink: 0,
     },
 
