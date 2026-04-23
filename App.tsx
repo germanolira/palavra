@@ -1,10 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
-import {
-  ActivityIndicator,
-  Pressable,
-  Text,
-  View,
-} from "react-native";
+import { ActivityIndicator, Pressable, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import {
@@ -77,30 +72,39 @@ export default function App() {
   const [hapticsEnabled, setHapticsEnabled] = useState(true);
   const [settingsReady, setSettingsReady] = useState(false);
   const [gameReady, setGameReady] = useState(false);
-  const [countdown, setCountdown] = useState({ hours: "--", minutes: "--", seconds: "--" });
+  const [countdown, setCountdown] = useState({
+    hours: "--",
+    minutes: "--",
+    seconds: "--",
+  });
   const [debugMode, setDebugMode] = useState(false);
 
-  const loadDailyWord = useCallback(async (forceToday = false) => {
-    const todayKey = getTodayDateKey();
-    const dateToLoad = forceToday ? todayKey : activeDate || todayKey;
+  const loadDailyWord = useCallback(
+    async (forceToday = false) => {
+      const todayKey = getTodayDateKey();
+      const dateToLoad = forceToday ? todayKey : activeDate || todayKey;
 
-    const dailyWord = getWordForDate(dateToLoad);
+      const dailyWord = getWordForDate(dateToLoad);
 
-    if (!dailyWord) {
-      throw new Error(`Missing daily word for ${dateToLoad}`);
-    }
+      if (!dailyWord) {
+        throw new Error(`Missing daily word for ${dateToLoad}`);
+      }
 
-    const savedGuesses = await AsyncStorage.getItem(GUESSES_STORAGE_KEY_PREFIX + dateToLoad);
-    const initialGuesses = savedGuesses ? JSON.parse(savedGuesses) : [];
+      const savedGuesses = await AsyncStorage.getItem(
+        GUESSES_STORAGE_KEY_PREFIX + dateToLoad,
+      );
+      const initialGuesses = savedGuesses ? JSON.parse(savedGuesses) : [];
 
-    setActiveDate(dateToLoad);
-    setTarget(dailyWord);
-    console.log(`Word: ${dailyWord} for date: ${dateToLoad}`);
-    setGuesses(initialGuesses);
-    setCurrent("");
-    setError(null);
-    setFlipRowIndex(-1);
-  }, [activeDate]);
+      setActiveDate(dateToLoad);
+      setTarget(dailyWord);
+      console.log(`Word: ${dailyWord} for date: ${dateToLoad}`);
+      setGuesses(initialGuesses);
+      setCurrent("");
+      setError(null);
+      setFlipRowIndex(-1);
+    },
+    [activeDate],
+  );
 
   const handleResetDay = useCallback(async () => {
     const todayKey = getTodayDateKey();
@@ -231,8 +235,13 @@ export default function App() {
 
       setCountdown({
         hours: String(Math.floor(diff / (1000 * 60 * 60))).padStart(2, "0"),
-        minutes: String(Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60))).padStart(2, "0"),
-        seconds: String(Math.floor((diff % (1000 * 60)) / 1000)).padStart(2, "0"),
+        minutes: String(
+          Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60)),
+        ).padStart(2, "0"),
+        seconds: String(Math.floor((diff % (1000 * 60)) / 1000)).padStart(
+          2,
+          "0",
+        ),
       });
     };
 
@@ -402,7 +411,7 @@ export default function App() {
         </View>
 
         <Pressable onLongPress={() => setDebugMode((prev) => !prev)}>
-          <Text style={styles.headerTitle}>PALAVRA</Text>
+          <Text style={styles.headerTitle}>Qual é a palavra?</Text>
         </Pressable>
 
         <View style={styles.headerSide}>
@@ -423,7 +432,7 @@ export default function App() {
 
       {gameOver ? (
         <View style={styles.gameOverHeader}>
-          <Text style={styles.gameOverCountdownLabel}>Próxima em</Text>
+          <Text style={styles.gameOverCountdownLabel}>Próxima palavra em</Text>
           <Text style={styles.gameOverCountdown}>
             {countdown.hours}:{countdown.minutes}:{countdown.seconds}
           </Text>
@@ -458,21 +467,21 @@ export default function App() {
         theme={theme}
       />
 
-       <SettingsModal
-         visible={showSettings}
-         onClose={() => setShowSettings(false)}
-         darkMode={darkMode}
-         onDarkModeChange={setDarkMode}
-         hapticsEnabled={hapticsEnabled}
-         onHapticsChange={setHapticsEnabled}
-         globalHapticsEnabled={hapticsEnabled}
-         activeDate={activeDate}
-         dailySeedBaseDate={getBaseDate()}
-         dailySeedFinalDate={getFinalDate()}
-         theme={theme}
-         debugMode={debugMode}
-         onResetDay={handleResetDay}
-       />
+      <SettingsModal
+        visible={showSettings}
+        onClose={() => setShowSettings(false)}
+        darkMode={darkMode}
+        onDarkModeChange={setDarkMode}
+        hapticsEnabled={hapticsEnabled}
+        onHapticsChange={setHapticsEnabled}
+        globalHapticsEnabled={hapticsEnabled}
+        activeDate={activeDate}
+        dailySeedBaseDate={getBaseDate()}
+        dailySeedFinalDate={getFinalDate()}
+        theme={theme}
+        debugMode={debugMode}
+        onResetDay={handleResetDay}
+      />
     </SafeAreaView>
   );
 }

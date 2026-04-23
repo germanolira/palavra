@@ -33,9 +33,8 @@ export function createAppStyles(theme: AppTheme) {
       justifyContent: "center",
     },
     headerTitle: {
-      fontFamily: "Inter_700Bold",
-      fontSize: 20,
-      letterSpacing: 6,
+      fontFamily: "Inter_500Medium",
+      fontSize: 18,
       color: theme.textMain,
     },
     gameOverHeader: {
@@ -49,8 +48,8 @@ export function createAppStyles(theme: AppTheme) {
       letterSpacing: 4,
     },
     gameOverCountdownLabel: {
-      fontFamily: "BeVietnamPro_500Medium",
-      fontSize: 12,
+      fontFamily: "Inter_600SemiBold",
+      fontSize: 16,
       color: theme.textMuted,
       marginBottom: 4,
     },
