@@ -32,10 +32,33 @@ export function createAppStyles(theme: AppTheme) {
       alignItems: "center",
       justifyContent: "center",
     },
-    headerCenter: {
-      flex: 1,
+    headerTitle: {
+      fontFamily: "BeVietnamPro_700Bold",
+      fontSize: 20,
+      letterSpacing: 6,
+      color: theme.textMain,
+    },
+    gameOverHeader: {
       alignItems: "center",
-      justifyContent: "center",
+      paddingVertical: 8,
+      gap: 2,
+    },
+    gameOverWord: {
+      fontFamily: "BeVietnamPro_700Bold",
+      fontSize: 18,
+      letterSpacing: 4,
+    },
+    gameOverCountdownLabel: {
+      fontFamily: "BeVietnamPro_500Medium",
+      fontSize: 12,
+      color: theme.textMuted,
+      marginBottom: 4,
+    },
+    gameOverCountdown: {
+      fontFamily: "BeVietnamPro_700Bold",
+      fontSize: 20,
+      color: theme.textMain,
+      letterSpacing: 2,
     },
     iconButton: {
       width: 40,
@@ -174,7 +197,7 @@ export function createAppStyles(theme: AppTheme) {
       color: theme.textInverse,
     },
     secondaryButton: {
-      backgroundColor: theme.bgSurface,
+      backgroundColor: theme.colorCorrect,
       borderWidth: 0,
       paddingVertical: 16,
       paddingHorizontal: 24,
@@ -183,11 +206,16 @@ export function createAppStyles(theme: AppTheme) {
       justifyContent: "center",
       minHeight: 56,
       flex: 1,
+      shadowColor: theme.textMain,
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.1,
+      shadowRadius: 4,
+      elevation: 2,
     },
     secondaryButtonText: {
       fontFamily: "BeVietnamPro_600SemiBold",
       fontSize: 17,
-      color: theme.textMain,
+      color: theme.textInverse,
     },
     dangerButton: {
       backgroundColor: theme.bgSurface,
@@ -265,6 +293,7 @@ export function createAppStyles(theme: AppTheme) {
     sheetFooter: {
       gap: 12,
       marginTop: 24,
+      marginBottom: 16,
       flexDirection: "row",
     },
     modalText: {

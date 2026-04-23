@@ -1,5 +1,5 @@
 import React from "react";
-import { Pressable, Switch, Text, View } from "react-native";
+import { Alert, Pressable, Switch, Text, View } from "react-native";
 
 import type { AppTheme } from "../constants/theme";
 import { createAppStyles } from "../styles/AppStyles";
@@ -17,6 +17,8 @@ interface SettingsModalProps {
   dailySeedBaseDate: string;
   dailySeedFinalDate: string;
   theme: AppTheme;
+  debugMode?: boolean;
+  onResetDay?: () => void;
 }
 
 function SettingRow({
@@ -64,6 +66,8 @@ export default function SettingsModal({
   dailySeedBaseDate,
   dailySeedFinalDate,
   theme,
+  debugMode,
+  onResetDay,
 }: SettingsModalProps) {
   const styles = React.useMemo(() => createAppStyles(theme), [theme]);
 
@@ -102,6 +106,31 @@ export default function SettingsModal({
         />
       </View>
 
+      {(__DEV__ || debugMode) && onResetDay ? (
+        <View style={styles.sectionCard}>
+          <Text style={styles.sectionTitle}>Debug</Text>
+          <Pressable
+            onPress={() => {
+              Alert.alert(
+                "Resetar dia",
+                "Tem certeza que deseja apagar as tentativas de hoje?",
+                [
+                  { text: "Cancelar", style: "cancel" },
+                  {
+                    text: "Resetar",
+                    style: "destructive",
+                    onPress: onResetDay,
+                  },
+                ],
+              );
+            }}
+            style={styles.dangerButton}
+            accessibilityRole="button"
+          >
+            <Text style={styles.dangerButtonText}>Resetar dia</Text>
+          </Pressable>
+        </View>
+      ) : null}
     </BottomSheetModal>
   );
 }

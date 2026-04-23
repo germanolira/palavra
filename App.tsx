@@ -24,24 +24,24 @@ import Animated, {
 } from "react-native-reanimated";
 
 import Board from "./components/Board";
-import VictoryScreen from "./components/VictoryScreen";
+import Confetti from "./components/Confetti";
 import Keyboard from "./components/Keyboard";
 import SettingsModal from "./components/SettingsModal";
 import TutorialModal from "./components/TutorialModal";
 import { DARK_THEME, LIGHT_THEME } from "./constants/theme";
 import { MAX_GUESSES, WORD_LENGTH, WORDS } from "./constants/words";
 import {
-  getDailySeedBaseDate,
-  getDailySeedFinalDate,
+  getBaseDate,
+  getFinalDate,
   getTodayDateKey,
   getWordForDate,
-  initializeDailyWordStorage,
 } from "./services/dailyWordStorage";
 import { createAppStyles } from "./styles/AppStyles";
 import type { BoardRow, LetterStates } from "./types";
 import { evaluateGuess, isValidWord, normalize } from "./utils/gameLogic";
 
 const SETTINGS_STORAGE_KEY = "appSettings";
+const GUESSES_STORAGE_KEY_PREFIX = "gameGuesses_";
 
 type AppSettings = {
   darkMode?: boolean;
@@ -67,25 +67,36 @@ export default function App() {
   const [hapticsEnabled, setHapticsEnabled] = useState(true);
   const [settingsReady, setSettingsReady] = useState(false);
   const [gameReady, setGameReady] = useState(false);
+  const [countdown, setCountdown] = useState({ hours: "--", minutes: "--", seconds: "--" });
+  const [debugMode, setDebugMode] = useState(false);
 
-  const loadDailyWord = useCallback(async () => {
+  const loadDailyWord = useCallback(async (forceToday = false) => {
     const todayKey = getTodayDateKey();
+    const dateToLoad = forceToday ? todayKey : activeDate || todayKey;
 
-    await initializeDailyWordStorage();
-
-    const dailyWord = await getWordForDate(todayKey);
+    const dailyWord = getWordForDate(dateToLoad);
 
     if (!dailyWord) {
-      throw new Error(`Missing daily word for ${todayKey}`);
+      throw new Error(`Missing daily word for ${dateToLoad}`);
     }
 
-    setActiveDate(todayKey);
+    const savedGuesses = await AsyncStorage.getItem(GUESSES_STORAGE_KEY_PREFIX + dateToLoad);
+    const initialGuesses = savedGuesses ? JSON.parse(savedGuesses) : [];
+
+    setActiveDate(dateToLoad);
     setTarget(dailyWord);
-    setGuesses([]);
+    console.log(`Word: ${dailyWord} for date: ${dateToLoad}`);
+    setGuesses(initialGuesses);
     setCurrent("");
     setError(null);
     setFlipRowIndex(-1);
-  }, []);
+  }, [activeDate]);
+
+  const handleResetDay = useCallback(async () => {
+    const todayKey = getTodayDateKey();
+    await AsyncStorage.removeItem(GUESSES_STORAGE_KEY_PREFIX + todayKey);
+    await loadDailyWord(true);
+  }, [loadDailyWord]);
 
   useEffect(() => {
     let mounted = true;
@@ -112,7 +123,7 @@ export default function App() {
         if (mounted) {
           setActiveDate(getTodayDateKey());
           setTarget(WORDS[0]);
-          setError("Banco local indisponivel. Usando fallback offline.");
+          setError("Erro ao carregar palavra do dia.");
         }
       } finally {
         if (mounted) {
@@ -142,6 +153,19 @@ export default function App() {
     });
   }, [darkMode, hapticsEnabled, settingsReady]);
 
+  useEffect(() => {
+    if (!gameReady || !activeDate) {
+      return;
+    }
+
+    AsyncStorage.setItem(
+      GUESSES_STORAGE_KEY_PREFIX + activeDate,
+      JSON.stringify(guesses),
+    ).catch((saveError) => {
+      console.error("Failed to save guesses:", saveError);
+    });
+  }, [guesses, activeDate, gameReady]);
+
   const theme = darkMode ? DARK_THEME : LIGHT_THEME;
   const styles = useMemo(() => createAppStyles(theme), [theme]);
 
@@ -163,6 +187,49 @@ export default function App() {
 
     return guesses[guesses.length - 1].word === target;
   }, [guesses, target]);
+
+  useEffect(() => {
+    if (!gameOver) {
+      return;
+    }
+
+    if (hapticsEnabled) {
+      Haptics.notificationAsync(
+        won
+          ? Haptics.NotificationFeedbackType.Success
+          : Haptics.NotificationFeedbackType.Error,
+      );
+    }
+
+    const update = () => {
+      const now = new Date();
+      const todayKey = getTodayDateKey();
+
+      if (todayKey !== activeDate) {
+        loadDailyWord();
+        return;
+      }
+
+      const midnight = new Date(now);
+      midnight.setHours(24, 0, 0, 0);
+      const diff = midnight.getTime() - now.getTime();
+
+      if (diff <= 0) {
+        loadDailyWord();
+        return;
+      }
+
+      setCountdown({
+        hours: String(Math.floor(diff / (1000 * 60 * 60))).padStart(2, "0"),
+        minutes: String(Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60))).padStart(2, "0"),
+        seconds: String(Math.floor((diff % (1000 * 60)) / 1000)).padStart(2, "0"),
+      });
+    };
+
+    update();
+    const interval = setInterval(update, 1000);
+    return () => clearInterval(interval);
+  }, [gameOver, hapticsEnabled, won, activeDate, loadDailyWord]);
 
   const letterStates = useMemo<LetterStates>(() => {
     const states: LetterStates = {};
@@ -283,13 +350,6 @@ export default function App() {
     [current, gameOver, guesses.length, hapticsEnabled, target, triggerShake],
   );
 
-  const restart = useCallback(() => {
-    setGuesses([]);
-    setCurrent("");
-    setError(null);
-    setFlipRowIndex(-1);
-  }, []);
-
   const board = useMemo<BoardRow[]>(() => {
     const nextRows = [...guesses];
 
@@ -331,7 +391,9 @@ export default function App() {
           </Pressable>
         </View>
 
-        <View style={styles.headerCenter} />
+        <Pressable onLongPress={() => setDebugMode((prev) => !prev)}>
+          <Text style={styles.headerTitle}>PALAVRA</Text>
+        </Pressable>
 
         <View style={styles.headerSide}>
           <Pressable
@@ -348,6 +410,15 @@ export default function App() {
           </Pressable>
         </View>
       </View>
+
+      {gameOver ? (
+        <View style={styles.gameOverHeader}>
+          <Text style={styles.gameOverCountdownLabel}>Próxima em</Text>
+          <Text style={styles.gameOverCountdown}>
+            {countdown.hours}:{countdown.minutes}:{countdown.seconds}
+          </Text>
+        </View>
+      ) : null}
 
       <Animated.View style={[styles.boardWrapper, shakeStyle]}>
         <Board board={board} flipRowIndex={flipRowIndex} theme={theme} />
@@ -368,14 +439,7 @@ export default function App() {
         />
       </View>
 
-      {gameOver ? (
-        <VictoryScreen
-          won={won}
-          target={target}
-          hapticsEnabled={hapticsEnabled}
-          theme={theme}
-        />
-      ) : null}
+      {won ? <Confetti active /> : null}
 
       <TutorialModal
         visible={showTutorial}
@@ -384,19 +448,21 @@ export default function App() {
         theme={theme}
       />
 
-      <SettingsModal
-        visible={showSettings}
-        onClose={() => setShowSettings(false)}
-        darkMode={darkMode}
-        onDarkModeChange={setDarkMode}
-        hapticsEnabled={hapticsEnabled}
-        onHapticsChange={setHapticsEnabled}
-        globalHapticsEnabled={hapticsEnabled}
-        activeDate={activeDate}
-        dailySeedBaseDate={getDailySeedBaseDate()}
-        dailySeedFinalDate={getDailySeedFinalDate()}
-        theme={theme}
-      />
+       <SettingsModal
+         visible={showSettings}
+         onClose={() => setShowSettings(false)}
+         darkMode={darkMode}
+         onDarkModeChange={setDarkMode}
+         hapticsEnabled={hapticsEnabled}
+         onHapticsChange={setHapticsEnabled}
+         globalHapticsEnabled={hapticsEnabled}
+         activeDate={activeDate}
+         dailySeedBaseDate={getBaseDate()}
+         dailySeedFinalDate={getFinalDate()}
+         theme={theme}
+         debugMode={debugMode}
+         onResetDay={handleResetDay}
+       />
     </SafeAreaView>
   );
 }
