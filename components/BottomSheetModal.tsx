@@ -7,6 +7,7 @@ import Animated, {
   interpolate,
   useAnimatedStyle,
   useSharedValue,
+  withSpring,
   withTiming,
 } from "react-native-reanimated";
 import { Gesture, GestureDetector } from "react-native-gesture-handler";
@@ -27,7 +28,6 @@ interface BottomSheetModalProps {
   dismissible?: boolean;
 }
 
-const OPEN_DURATION = 240;
 const CLOSE_DURATION = 260;
 const DRAG_CLOSE_THRESHOLD = 120;
 const DRAG_CLOSE_VELOCITY = 800;
@@ -54,8 +54,8 @@ function BottomSheetModal({
   React.useEffect(() => {
     if (visible) {
       setIsRendered(true);
-      progress.value = withTiming(1, { duration: OPEN_DURATION, easing: Easing.out(Easing.cubic) });
-      translateY.value = withTiming(0, { duration: OPEN_DURATION, easing: Easing.out(Easing.cubic) });
+      progress.value = withSpring(1, { stiffness: 300, damping: 30, mass: 0.8 });
+      translateY.value = withSpring(0, { stiffness: 300, damping: 30, mass: 0.8 });
     } else {
       progress.value = withTiming(0, { duration: CLOSE_DURATION, easing: Easing.in(Easing.cubic) });
       translateY.value = withTiming(
@@ -137,8 +137,8 @@ function BottomSheetModal({
         );
         progress.value = withTiming(0, { duration: CLOSE_DURATION, easing: Easing.in(Easing.cubic) });
       } else {
-        translateY.value = withTiming(0, { duration: 200, easing: Easing.out(Easing.cubic) });
-        progress.value = withTiming(1, { duration: 200, easing: Easing.out(Easing.cubic) });
+        translateY.value = withSpring(0, { stiffness: 400, damping: 35, mass: 0.6 });
+        progress.value = withSpring(1, { stiffness: 400, damping: 35, mass: 0.6 });
       }
     }), [closedTranslateY, context, dismissible, onClose, progress, translateY]);
 
@@ -173,18 +173,6 @@ function BottomSheetModal({
             </View>
             <View style={styles.sheetHeader}>
               <Text style={styles.sheetTitle}>{title}</Text>
-              {dismissible && onClose ? (
-                <Pressable
-                  onPress={handleDismiss}
-                  style={styles.iconButton}
-                  accessibilityRole="button"
-                  accessibilityLabel={`Fechar ${title}`}
-                >
-                  <Text style={styles.iconButtonText}>X</Text>
-                </Pressable>
-              ) : (
-                <View style={styles.iconButtonSpacer} />
-              )}
             </View>
           </View>
         </GestureDetector>

@@ -1,6 +1,7 @@
 export interface AppTheme {
   bgBase: string;
   bgSurface: string;
+  bgContainer: string;
   textMain: string;
   textMuted: string;
   textInverse: string;
@@ -14,31 +15,33 @@ export interface AppTheme {
 }
 
 export const LIGHT_THEME: AppTheme = {
-  bgBase: "#fdf9f0",
-  bgSurface: "#ece8df",
-  textMain: "#1c1c16",
-  textMuted: "#434840",
+  bgBase: "#f3f1ed",
+  bgSurface: "#ebe8e3",
+  bgContainer: "#e2dfd9",
+  textMain: "#1c1917",
+  textMuted: "#78716c",
   textInverse: "#ffffff",
-  borderBase: "#c3c8be",
-  colorCorrect: "#2d4a2b",
-  colorPresent: "#d97706",
-  colorAbsent: "#312a2c",
-  colorAbsentKey: "#c4bfb8",
-  colorError: "#ba1a1a",
-  overlay: "rgba(28, 28, 22, 0.48)",
+  borderBase: "#d6d3d1",
+  colorCorrect: "#16a34a",
+  colorPresent: "#f59e0b",
+  colorAbsent: "#57534e",
+  colorAbsentKey: "#a8a29e",
+  colorError: "#ef4444",
+  overlay: "rgba(28, 25, 23, 0.55)",
 } as const;
 
 export const DARK_THEME: AppTheme = {
-  bgBase: "#1a1a1a",
-  bgSurface: "#2d2d2d",
-  textMain: "#f0f0f0",
-  textMuted: "#949494",
-  textInverse: "#ffffff",
-  borderBase: "#404040",
-  colorCorrect: "#6a9a5e",
-  colorPresent: "#c27f2e",
-  colorAbsent: "#52525b",
-  colorAbsentKey: "#52525b",
-  colorError: "#ffdad6",
-  overlay: "rgba(0, 0, 0, 0.62)",
+  bgBase: "#121212",
+  bgSurface: "#1e1e1e",
+  bgContainer: "#2c2c2e",
+  textMain: "#ffffff",
+  textMuted: "#8e8e93",
+  textInverse: "#f2f2f7",
+  borderBase: "#38383a",
+  colorCorrect: "#6aaa64",
+  colorPresent: "#c9b458",
+  colorAbsent: "#636366",
+  colorAbsentKey: "#48484a",
+  colorError: "#e8453c",
+  overlay: "rgba(0, 0, 0, 0.70)",
 } as const;

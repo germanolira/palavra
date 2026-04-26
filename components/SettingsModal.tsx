@@ -23,30 +23,35 @@ function SettingRow({
   value,
   onValueChange,
   theme,
+  isLast = false,
 }: {
   label: string;
   description: string;
   value: boolean;
   onValueChange: (value: boolean) => void;
   theme: AppTheme;
+  isLast?: boolean;
 }) {
   const styles = useAppStyles(theme);
 
   return (
-    <View style={styles.settingsListItem}>
-      <View style={styles.settingsListItemLabelBlock}>
-        <Text style={styles.settingsListItemLabel}>{label}</Text>
-        <Text style={styles.settingsListItemDescription}>{description}</Text>
+    <View>
+      <View style={[styles.settingsListItem, { paddingHorizontal: 16 }]}>
+        <View style={styles.settingsListItemLabelBlock}>
+          <Text style={styles.settingsListItemLabel}>{label}</Text>
+          <Text style={styles.settingsListItemDescription}>{description}</Text>
+        </View>
+        <Switch
+          value={value}
+          onValueChange={onValueChange}
+          trackColor={{
+            false: theme.borderBase,
+            true: theme.colorCorrect,
+          }}
+          thumbColor={value ? theme.textInverse : theme.bgSurface}
+        />
       </View>
-      <Switch
-        value={value}
-        onValueChange={onValueChange}
-        trackColor={{
-          false: theme.borderBase,
-          true: theme.colorCorrect,
-        }}
-        thumbColor={value ? theme.textInverse : theme.bgSurface}
-      />
+      {!isLast && <View style={[styles.settingsDivider, { marginLeft: 16 }]} />}
     </View>
   );
 }
@@ -72,63 +77,61 @@ function SettingsModal({
       theme={theme}
       hapticsEnabled={hapticsEnabled}
       footer={
-        <Pressable onPress={onClose} style={styles.secondaryButton} accessibilityRole="button">
-          <Text style={styles.secondaryButtonText}>Fechar</Text>
+        <Pressable onPress={onClose} style={styles.primaryButton} accessibilityRole="button">
+          <Text style={styles.primaryButtonText}>Concluído</Text>
         </Pressable>
       }
     >
-      <View style={styles.settingsSectionFirst}>
-        <Text style={styles.settingsSectionTitle}>Aparência</Text>
-        <SettingRow
-          label="Modo escuro"
-          description="Usa a nova paleta noturna com contraste mais suave e elegante."
-          value={darkMode}
-          onValueChange={onDarkModeChange}
-          theme={theme}
-        />
-      </View>
-
-      <View style={styles.settingsDivider} />
-
-      <View style={styles.settingsSection}>
-        <Text style={styles.settingsSectionTitle}>Feedback</Text>
-        <SettingRow
-          label="Haptics"
-          description="Adiciona resposta tátil ao tocar no teclado e nas ações do jogo."
-          value={hapticsEnabled}
-          onValueChange={onHapticsChange}
-          theme={theme}
-        />
-      </View>
-
-      {(__DEV__ || debugMode) && onResetDay ? (
-        <>
-          <View style={styles.settingsDivider} />
-          <View style={styles.settingsSection}>
-            <Text style={styles.settingsSectionTitle}>Debug</Text>
-            <Pressable
-              onPress={() => {
-                Alert.alert(
-                  "Resetar dia",
-                  "Tem certeza que deseja apagar as tentativas de hoje?",
-                  [
-                    { text: "Cancelar", style: "cancel" },
-                    {
-                      text: "Resetar",
-                      style: "destructive",
-                      onPress: onResetDay,
-                    },
-                  ],
-                );
-              }}
-              style={styles.dangerButton}
-              accessibilityRole="button"
-            >
-              <Text style={styles.dangerButtonText}>Resetar dia</Text>
-            </Pressable>
+      <View style={{ gap: 32, paddingVertical: 8 }}>
+        <View style={{ gap: 8 }}>
+          <Text style={styles.settingsSectionTitle}>Preferências</Text>
+          <View style={{ backgroundColor: theme.bgContainer, borderRadius: 28, overflow: "hidden" }}>
+            <SettingRow
+              label="Modo escuro"
+              description="Usa a nova paleta noturna com contraste mais suave e elegante."
+              value={darkMode}
+              onValueChange={onDarkModeChange}
+              theme={theme}
+            />
+            <SettingRow
+              label="Haptics"
+              description="Adiciona resposta tátil ao tocar no teclado e nas ações do jogo."
+              value={hapticsEnabled}
+              onValueChange={onHapticsChange}
+              theme={theme}
+              isLast={true}
+            />
           </View>
-        </>
-      ) : null}
+        </View>
+
+        {(__DEV__ || debugMode) && onResetDay ? (
+          <View style={{ gap: 8 }}>
+            <Text style={styles.settingsSectionTitle}>Debug</Text>
+            <View style={{ backgroundColor: theme.bgContainer, borderRadius: 28, overflow: "hidden" }}>
+              <Pressable
+                onPress={() => {
+                  Alert.alert(
+                    "Resetar dia",
+                    "Tem certeza que deseja apagar as tentativas de hoje?",
+                    [
+                      { text: "Cancelar", style: "cancel" },
+                      {
+                        text: "Resetar",
+                        style: "destructive",
+                        onPress: onResetDay,
+                      },
+                    ],
+                  );
+                }}
+                style={styles.settingsListItem}
+                accessibilityRole="button"
+              >
+                <Text style={[styles.settingsListItemLabel, { color: theme.colorError }]}>Resetar progresso de hoje</Text>
+              </Pressable>
+            </View>
+          </View>
+        ) : null}
+      </View>
     </BottomSheetModal>
   );
 }
