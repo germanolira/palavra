@@ -5,12 +5,15 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import App from './App';
+import ErrorBoundary from './components/ErrorBoundary';
 
 const RootApp = () => (
   <GestureHandlerRootView style={styles.container}>
-    <SafeAreaProvider>
-      <App />
-    </SafeAreaProvider>
+    <ErrorBoundary>
+      <SafeAreaProvider>
+        <App />
+      </SafeAreaProvider>
+    </ErrorBoundary>
   </GestureHandlerRootView>
 );
 

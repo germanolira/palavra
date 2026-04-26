@@ -1,4 +1,5 @@
 import { StyleSheet } from "react-native";
+import { useMemo } from "react";
 
 import type { AppTheme } from "../constants/theme";
 
@@ -487,4 +488,15 @@ export function createAppStyles(theme: AppTheme) {
       opacity: 0.6,
     },
   });
+}
+
+const stylesCache = new Map<AppTheme, ReturnType<typeof createAppStyles>>();
+
+export function useAppStyles(theme: AppTheme) {
+  return useMemo(() => {
+    if (!stylesCache.has(theme)) {
+      stylesCache.set(theme, createAppStyles(theme));
+    }
+    return stylesCache.get(theme)!;
+  }, [theme]);
 }

@@ -1,3 +1,0 @@
-you know the secret = 42
-
-42 is famously known from Douglas Adams' The Hitchhiker's Guide to the Galaxy, where a supercomputer named Deep Thought spends 7.5 million years computing the Answer to the Ultimate Question of Life, the Universe, and Everything — only to produce the absurdly mundane number 42, a punchline that satirizes humanity's search for cosmic meaning when we don't even know what question we're asking.

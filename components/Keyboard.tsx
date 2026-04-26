@@ -1,17 +1,16 @@
 import React from "react";
 import { Pressable, Text, View, useWindowDimensions } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import * as Haptics from "expo-haptics";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
-  withSpring,
+  withTiming,
 } from "react-native-reanimated";
 
 import type { AppTheme } from "../constants/theme";
 import { KEYBOARD_ROWS } from "../constants/words";
-import { createAppStyles } from "../styles/AppStyles";
+import { useAppStyles } from "../styles/AppStyles";
 import type { LetterStates } from "../types";
 
 interface KeyboardProps {
@@ -21,7 +20,7 @@ interface KeyboardProps {
   theme: AppTheme;
 }
 
-function getKeyStyle(state: string | undefined, styles: ReturnType<typeof createAppStyles>) {
+function getKeyStyle(state: string | undefined, styles: ReturnType<typeof useAppStyles>) {
   switch (state) {
     case "correct":
       return { keyStyle: styles.keyCorrect, textStyle: styles.keyCorrectText };
@@ -34,26 +33,27 @@ function getKeyStyle(state: string | undefined, styles: ReturnType<typeof create
   }
 }
 
+interface KeyButtonProps {
+  label: string;
+  state?: string;
+  onPress: () => void;
+  flex?: number;
+  theme: AppTheme;
+  keyHeight: number;
+  fontSize: number;
+}
+
 function KeyButton({
   label,
   state,
   onPress,
   flex = 1,
-  hapticsEnabled = true,
   theme,
-}: {
-  label: string;
-  state?: string;
-  onPress: () => void;
-  flex?: number;
-  hapticsEnabled?: boolean;
-  theme: AppTheme;
-}) {
-  const styles = React.useMemo(() => createAppStyles(theme), [theme]);
+  keyHeight,
+  fontSize,
+}: KeyButtonProps) {
+  const styles = useAppStyles(theme);
   const scale = useSharedValue(1);
-  const { width } = useWindowDimensions();
-  const keyHeight = Math.max(42, width * 0.105);
-  const fontSize = Math.max(12, width * 0.032);
   const isSpecial = label === "ENTER" || label === "DEL";
   const { keyStyle, textStyle } = getKeyStyle(state, styles);
 
@@ -61,17 +61,13 @@ function KeyButton({
     transform: [{ scale: scale.value }],
   }));
 
-  const handlePressIn = () => {
-    scale.value = withSpring(0.94, { stiffness: 380, damping: 18 });
+  const handlePressIn = React.useCallback(() => {
+    scale.value = withTiming(0.94, { duration: 80 });
+  }, [scale]);
 
-    if (hapticsEnabled) {
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    }
-  };
-
-  const handlePressOut = () => {
-    scale.value = withSpring(1, { stiffness: 380, damping: 18 });
-  };
+  const handlePressOut = React.useCallback(() => {
+    scale.value = withTiming(1, { duration: 80 });
+  }, [scale]);
 
   return (
     <Animated.View style={[{ flex }, animatedStyle]}>
@@ -100,25 +96,42 @@ function KeyButton({
   );
 }
 
-export default function Keyboard({
+const KeyButtonMemo = React.memo(KeyButton, (prev, next) => {
+  return prev.label === next.label
+    && prev.state === next.state
+    && prev.flex === next.flex
+    && prev.theme === next.theme
+    && prev.keyHeight === next.keyHeight
+    && prev.fontSize === next.fontSize
+    && prev.onPress === next.onPress;
+});
+
+function Keyboard({
   onKeyPress,
   letterStates,
-  hapticsEnabled = true,
   theme,
-}: KeyboardProps) {
-  const styles = React.useMemo(() => createAppStyles(theme), [theme]);
+}: Omit<KeyboardProps, "hapticsEnabled"> & { hapticsEnabled?: boolean }) {
+  const styles = useAppStyles(theme);
   const { width } = useWindowDimensions();
   const insets = useSafeAreaInsets();
-  
-  // Responsive gap based on device width
+
   const gap = Math.max(5, width * 0.012);
-  
-  // Horizontal padding: responsive with minimum of 12px, max 5% of width
   const horizontalPadding = Math.max(12, Math.min(width * 0.05, 24));
-  
-  // Vertical padding: inset bottom + 12px minimum, top 8px
   const verticalPaddingBottom = Math.max(8, insets.bottom);
   const verticalPaddingTop = 4;
+
+  const keyHeight = React.useMemo(() => Math.max(42, width * 0.105), [width]);
+  const fontSize = React.useMemo(() => Math.max(12, width * 0.032), [width]);
+
+  const keyHandlers = React.useMemo(() => {
+    const handlers: Record<string, () => void> = {};
+    for (const row of KEYBOARD_ROWS) {
+      for (const key of row) {
+        handlers[key] = () => onKeyPress(key);
+      }
+    }
+    return handlers;
+  }, [onKeyPress]);
 
   return (
     <View
@@ -135,14 +148,15 @@ export default function Keyboard({
       {KEYBOARD_ROWS.map((row, rowIndex) => (
         <View key={rowIndex} style={[styles.keyRow, { gap }]}>
           {row.map((key) => (
-            <KeyButton
+            <KeyButtonMemo
               key={key}
               label={key}
               state={letterStates[key]}
-              onPress={() => onKeyPress(key)}
+              onPress={keyHandlers[key]}
               flex={key === "ENTER" || key === "DEL" ? 1.5 : 1}
-              hapticsEnabled={hapticsEnabled}
               theme={theme}
+              keyHeight={keyHeight}
+              fontSize={fontSize}
             />
           ))}
         </View>
@@ -150,3 +164,5 @@ export default function Keyboard({
     </View>
   );
 }
+
+export default React.memo(Keyboard);

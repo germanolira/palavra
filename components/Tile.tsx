@@ -5,11 +5,13 @@ import Animated, {
   useAnimatedStyle,
   useSharedValue,
   withDelay,
+  withSequence,
   withTiming,
 } from "react-native-reanimated";
 
 import type { AppTheme } from "../constants/theme";
-import { createAppStyles } from "../styles/AppStyles";
+import { WORD_LENGTH } from "../constants/words";
+import { useAppStyles } from "../styles/AppStyles";
 import type { TileState } from "../types";
 
 interface TileProps {
@@ -17,21 +19,24 @@ interface TileProps {
   state: TileState;
   index: number;
   animateFlip: boolean;
+  celebrate: boolean;
   tileSize: number;
   theme: AppTheme;
 }
 
-export default function Tile({
+function Tile({
   letter,
   state,
   index,
   animateFlip,
+  celebrate,
   tileSize,
   theme,
 }: TileProps) {
-  const styles = React.useMemo(() => createAppStyles(theme), [theme]);
+  const styles = useAppStyles(theme);
   const fontSize = tileSize * 0.42;
   const flipProgress = useSharedValue(0);
+  const bounceOffset = useSharedValue(0);
 
   React.useEffect(() => {
     if (animateFlip && state !== "active" && state !== "empty") {
@@ -42,7 +47,27 @@ export default function Tile({
     if (!animateFlip) {
       flipProgress.value = 0;
     }
-  }, [animateFlip, flipProgress, index, state]);
+  }, [animateFlip, index, state]);
+
+  React.useEffect(() => {
+    if (!celebrate) {
+      bounceOffset.value = 0;
+      return;
+    }
+
+    const flipDuration = 350;
+    const flipStagger = 120;
+    const totalFlipTime = (WORD_LENGTH - 1) * flipStagger + flipDuration;
+    const bounceDelay = totalFlipTime + index * 100;
+
+    bounceOffset.value = withDelay(
+      bounceDelay,
+      withSequence(
+        withTiming(-tileSize * 0.3, { duration: 200 }),
+        withTiming(0, { duration: 200 }),
+      ),
+    );
+  }, [celebrate, index, tileSize]);
 
   const animatedStyle = useAnimatedStyle(() => {
     const scaleY = interpolate(
@@ -50,14 +75,14 @@ export default function Tile({
       [0, 0.5, 1],
       [1, 0, 1],
     );
-    const scale = interpolate(
+    const flipScale = interpolate(
       flipProgress.value,
       [0, 0.5, 1],
       [1, 0.95, 1],
     );
 
     return {
-      transform: [{ scaleY }, { scale }],
+      transform: [{ scaleY }, { scale: flipScale }, { translateY: bounceOffset.value }],
     };
   });
 
@@ -89,3 +114,5 @@ export default function Tile({
     </Animated.View>
   );
 }
+
+export default React.memo(Tile);

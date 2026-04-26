@@ -34,10 +34,13 @@ export function evaluateGuess(guess: string, target: string): TileState[] {
   return res;
 }
 
-export function getRandomWord(words: string[]): string {
-  return words[Math.floor(Math.random() * words.length)];
-}
+let cachedWordSet: Set<string> | null = null;
+let cachedWordSource: readonly string[] | null = null;
 
-export function isValidWord(word: string, words: string[]): boolean {
-  return words.includes(word.toUpperCase());
+export function isValidWord(word: string, words: readonly string[]): boolean {
+  if (cachedWordSource !== words) {
+    cachedWordSet = new Set(words);
+    cachedWordSource = words;
+  }
+  return cachedWordSet!.has(word.toUpperCase());
 }

@@ -2,7 +2,7 @@ import React from "react";
 import { Alert, Pressable, Switch, Text, View } from "react-native";
 
 import type { AppTheme } from "../constants/theme";
-import { createAppStyles } from "../styles/AppStyles";
+import { useAppStyles } from "../styles/AppStyles";
 import BottomSheetModal from "./BottomSheetModal";
 
 interface SettingsModalProps {
@@ -12,10 +12,6 @@ interface SettingsModalProps {
   onDarkModeChange: (value: boolean) => void;
   hapticsEnabled: boolean;
   onHapticsChange: (value: boolean) => void;
-  globalHapticsEnabled?: boolean;
-  activeDate: string;
-  dailySeedBaseDate: string;
-  dailySeedFinalDate: string;
   theme: AppTheme;
   debugMode?: boolean;
   onResetDay?: () => void;
@@ -34,7 +30,7 @@ function SettingRow({
   onValueChange: (value: boolean) => void;
   theme: AppTheme;
 }) {
-  const styles = React.useMemo(() => createAppStyles(theme), [theme]);
+  const styles = useAppStyles(theme);
 
   return (
     <View style={styles.settingsListItem}>
@@ -55,7 +51,7 @@ function SettingRow({
   );
 }
 
-export default function SettingsModal({
+function SettingsModal({
   visible,
   onClose,
   darkMode,
@@ -66,7 +62,7 @@ export default function SettingsModal({
   debugMode,
   onResetDay,
 }: SettingsModalProps) {
-  const styles = React.useMemo(() => createAppStyles(theme), [theme]);
+  const styles = useAppStyles(theme);
 
   return (
     <BottomSheetModal
@@ -136,3 +132,5 @@ export default function SettingsModal({
     </BottomSheetModal>
   );
 }
+
+export default React.memo(SettingsModal);

@@ -2,7 +2,7 @@ import React from "react";
 import { Pressable, Text, View } from "react-native";
 
 import type { AppTheme } from "../constants/theme";
-import { createAppStyles } from "../styles/AppStyles";
+import { useAppStyles } from "../styles/AppStyles";
 import BottomSheetModal from "./BottomSheetModal";
 
 interface TutorialModalProps {
@@ -25,7 +25,7 @@ function ExampleCard({
   backgroundColor: string;
   theme: AppTheme;
 }) {
-  const styles = React.useMemo(() => createAppStyles(theme), [theme]);
+  const styles = useAppStyles(theme);
 
   return (
     <View style={styles.exampleCard}>
@@ -40,13 +40,13 @@ function ExampleCard({
   );
 }
 
-export default function TutorialModal({
+function TutorialModal({
   visible,
   onClose,
   hapticsEnabled = true,
   theme,
 }: TutorialModalProps) {
-  const styles = React.useMemo(() => createAppStyles(theme), [theme]);
+  const styles = useAppStyles(theme);
 
   return (
     <BottomSheetModal
@@ -93,3 +93,5 @@ export default function TutorialModal({
     </BottomSheetModal>
   );
 }
+
+export default React.memo(TutorialModal);
