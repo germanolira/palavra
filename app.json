@@ -19,13 +19,20 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#0b0b0c"
       },
-      "package": "com.howdy.palavra"
+      "package": "com.howdy.palavra",
+      "versionCode": 2
     },
     "web": {
       "favicon": "./assets/favicon.png"
     },
     "plugins": [
       "expo-font"
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "fe3edd82-9dc4-4acd-838b-3828b85fe4ef"
+      }
+    },
+    "owner": "germanolira"
   }
 }
