@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "palavra",
-    "slug": "snack-3f2fff26-c849-4a6d-8686-9bec7883d0cf",
+    "name": "Palavra",
+    "slug": "palavra",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -12,14 +12,14 @@
       "backgroundColor": "#ffffff"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": false
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
+        "backgroundColor": "#0b0b0c"
       },
-      "package": "com.germanolira.snack3f2fff26c8494a6d86869bec7883d0cf"
+      "package": "com.howdy.palavra"
     },
     "web": {
       "favicon": "./assets/favicon.png"

@@ -353,7 +353,6 @@ export default function App() {
     return nextRows;
   }, [current, guesses]);
 
-  // Early return - hooks after this line must be stable
   if (!fontsLoaded || !ready) {
     return (
       <SafeAreaView style={styles.center}>
