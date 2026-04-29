@@ -13,9 +13,12 @@ interface BoardProps {
   maxHeight: number;
   won: boolean;
   theme: AppTheme;
+  activeRowIndex: number;
+  cursorPos: number;
+  onTilePress: (index: number) => void;
 }
 
-function Board({ board, flipRowIndex, maxHeight, won, theme }: BoardProps) {
+function Board({ board, flipRowIndex, maxHeight, won, theme, activeRowIndex, cursorPos, onTilePress }: BoardProps) {
   const styles = useAppStyles(theme);
   const { width } = useWindowDimensions();
 
@@ -42,13 +45,15 @@ function Board({ board, flipRowIndex, maxHeight, won, theme }: BoardProps) {
           {Array.from({ length: WORD_LENGTH }).map((_, columnIndex) => (
             <Tile
               key={columnIndex}
-              letter={row.word[columnIndex] || ""}
+              letter={row.letters?.[columnIndex] ?? row.word[columnIndex] ?? ""}
               state={row.eval[columnIndex]}
               index={columnIndex}
               animateFlip={flipRowIndex === rowIndex}
               celebrate={won && flipRowIndex === rowIndex}
               tileSize={tileSize}
               theme={theme}
+              cursorActive={rowIndex === activeRowIndex && columnIndex === cursorPos}
+              onPress={rowIndex === activeRowIndex ? () => onTilePress(columnIndex) : undefined}
             />
           ))}
         </View>

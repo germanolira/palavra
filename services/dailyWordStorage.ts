@@ -29,7 +29,8 @@ export function getFinalDate() {
 }
 
 export function getTodayDateKey() {
-  return formatDateKey(new Date());
+  const key = formatDateKey(new Date());
+  return key;
 }
 
 export function getWordForDate(date: string): string | null {
@@ -39,11 +40,14 @@ export function getWordForDate(date: string): string | null {
     return null;
   }
 
-  return SCHEDULED_WORDS[dayIndex].word;
+  const word = SCHEDULED_WORDS[dayIndex].word;
+  return word;
 }
 
 export function getTodayWord(): string | null {
-  return getWordForDate(getTodayDateKey());
+  const today = getTodayDateKey();
+  const word = getWordForDate(today);
+  return word;
 }
 
 export function getTotalDays() {

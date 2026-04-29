@@ -12,6 +12,8 @@ interface SettingsModalProps {
   onDarkModeChange: (value: boolean) => void;
   hapticsEnabled: boolean;
   onHapticsChange: (value: boolean) => void;
+  notificationsEnabled: boolean;
+  onNotificationsChange: (value: boolean) => void;
   theme: AppTheme;
   debugMode?: boolean;
   onResetDay?: () => void;
@@ -63,6 +65,8 @@ function SettingsModal({
   onDarkModeChange,
   hapticsEnabled,
   onHapticsChange,
+  notificationsEnabled,
+  onNotificationsChange,
   theme,
   debugMode,
   onResetDay,
@@ -98,6 +102,13 @@ function SettingsModal({
               description="Adiciona resposta tátil ao tocar no teclado e nas ações do jogo."
               value={hapticsEnabled}
               onValueChange={onHapticsChange}
+              theme={theme}
+            />
+            <SettingRow
+              label="Notificações"
+              description="Receba um lembrete quando uma nova palavra do dia estiver disponível."
+              value={notificationsEnabled}
+              onValueChange={onNotificationsChange}
               theme={theme}
               isLast={true}
             />

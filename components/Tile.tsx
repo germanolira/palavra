@@ -1,5 +1,5 @@
 import React from "react";
-import { Text } from "react-native";
+import { Pressable, Text } from "react-native";
 import Animated, {
   interpolate,
   useAnimatedStyle,
@@ -22,6 +22,8 @@ interface TileProps {
   celebrate: boolean;
   tileSize: number;
   theme: AppTheme;
+  cursorActive?: boolean;
+  onPress?: () => void;
 }
 
 function Tile({
@@ -32,6 +34,8 @@ function Tile({
   celebrate,
   tileSize,
   theme,
+  cursorActive,
+  onPress,
 }: TileProps) {
   const styles = useAppStyles(theme);
   const fontSize = tileSize * 0.42;
@@ -101,11 +105,13 @@ function Tile({
     }
   }, [state, styles]);
 
-  return (
+  const tileContent = (
     <Animated.View
+      pointerEvents="none"
       style={[
         styles.tile,
         stateStyle.tileStyle,
+        cursorActive ? styles.tileCursor : null,
         animatedStyle,
         { width: tileSize, height: tileSize, borderRadius: tileSize * 0.18 },
       ]}
@@ -113,6 +119,25 @@ function Tile({
       <Text style={[styles.tileText, stateStyle.textStyle, { fontSize }]}>{letter}</Text>
     </Animated.View>
   );
+
+  if (onPress) {
+    return (
+      <Pressable
+        onPress={onPress}
+        accessibilityRole="button"
+        hitSlop={8}
+        style={{
+          width: tileSize,
+          height: tileSize,
+          borderRadius: tileSize * 0.18,
+        }}
+      >
+        {tileContent}
+      </Pressable>
+    );
+  }
+
+  return tileContent;
 }
 
 export default React.memo(Tile);

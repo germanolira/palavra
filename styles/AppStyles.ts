@@ -132,6 +132,10 @@ export function createAppStyles(theme: AppTheme) {
       backgroundColor: theme.bgSurface,
       borderColor: theme.borderBase,
     },
+    tileCursor: {
+      borderColor: theme.textMain,
+      borderWidth: 2.5,
+    },
 
     bottomArea: {
       paddingTop: 4,

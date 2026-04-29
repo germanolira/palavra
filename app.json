@@ -26,13 +26,20 @@
       "favicon": "./assets/favicon.png"
     },
     "plugins": [
-      "expo-font"
+      "expo-font",
+      "expo-notifications"
     ],
     "extra": {
       "eas": {
         "projectId": "fe3edd82-9dc4-4acd-838b-3828b85fe4ef"
       }
     },
-    "owner": "germanolira"
+    "owner": "germanolira",
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/fe3edd82-9dc4-4acd-838b-3828b85fe4ef"
+    }
   }
 }

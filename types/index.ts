@@ -9,6 +9,7 @@ export interface Guess {
 
 export interface BoardRow {
   word: string;
+  letters?: string[];
   eval: TileState[];
 }
 

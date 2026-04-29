@@ -17,8 +17,14 @@ import {
 } from "@expo-google-fonts/inter";
 import { useGameHaptics } from "./hooks/useGameHaptics";
 import { useEvent } from "./hooks/useEvent";
+import {
+  cancelScheduledNotifications,
+  requestNotificationPermissions,
+  scheduleNextWordNotification,
+} from "./services/notificationService";
 import { StatusBar } from "expo-status-bar";
 import Animated, {
+  FadeInDown,
   useAnimatedStyle,
   useSharedValue,
   withSequence,
@@ -43,10 +49,28 @@ import { evaluateGuess, isValidWord, normalize } from "./utils/gameLogic";
 
 const SETTINGS_STORAGE_KEY = "appSettings";
 const GUESSES_STORAGE_KEY_PREFIX = "gameGuesses_";
+const createEmptyCurrentLetters = () => Array(WORD_LENGTH).fill("") as string[];
+
+function findNextEmptyTile(letters: string[], fromIndex: number) {
+  for (let index = fromIndex; index < WORD_LENGTH; index += 1) {
+    if (!letters[index]) {
+      return index;
+    }
+  }
+
+  for (let index = 0; index < fromIndex; index += 1) {
+    if (!letters[index]) {
+      return index;
+    }
+  }
+
+  return null;
+}
 
 type AppSettings = {
   darkMode?: boolean;
   hapticsEnabled?: boolean;
+  notificationsEnabled?: boolean;
 };
 
 export default function App() {
@@ -64,13 +88,17 @@ export default function App() {
   const [target, setTarget] = useState("");
   const [activeDate, setActiveDate] = useState("");
   const [guesses, setGuesses] = useState<BoardRow[]>([]);
-  const [current, setCurrent] = useState("");
+  const [currentLetters, setCurrentLetters] = useState<string[]>(
+    createEmptyCurrentLetters,
+  );
+  const [cursorPos, setCursorPos] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [showTutorial, setShowTutorial] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [flipRowIndex, setFlipRowIndex] = useState(-1);
   const [darkMode, setDarkMode] = useState(false);
   const [hapticsEnabled, setHapticsEnabled] = useState(true);
+  const [notificationsEnabled, setNotificationsEnabled] = useState(true);
   const [ready, setReady] = useState(false);
   const [debugMode, setDebugMode] = useState(false);
   const [boardHeight, setBoardHeight] = useState(0);
@@ -108,7 +136,8 @@ export default function App() {
   });
 
   const handleMidnightRollover = useEvent(async () => {
-    setCurrent("");
+    setCurrentLetters(createEmptyCurrentLetters());
+    setCursorPos(0);
     setError(null);
     setFlipRowIndex(-1);
     setJustFinished(false);
@@ -118,7 +147,8 @@ export default function App() {
   const handleResetDay = useEvent(async () => {
     const todayKey = getTodayDateKey();
     await AsyncStorage.removeItem(GUESSES_STORAGE_KEY_PREFIX + todayKey);
-    setCurrent("");
+    setCurrentLetters(createEmptyCurrentLetters());
+    setCursorPos(0);
     setError(null);
     setFlipRowIndex(-1);
     await loadDailyWord(true);
@@ -130,10 +160,11 @@ export default function App() {
     async function bootApp() {
       try {
         const rawSettings = await AsyncStorage.getItem(SETTINGS_STORAGE_KEY);
+        const savedSettings = rawSettings
+          ? (JSON.parse(rawSettings) as AppSettings)
+          : null;
 
-        if (rawSettings && mounted) {
-          const savedSettings = JSON.parse(rawSettings) as AppSettings;
-
+        if (savedSettings && mounted) {
           if (typeof savedSettings.darkMode === "boolean") {
             setDarkMode(savedSettings.darkMode);
           }
@@ -141,15 +172,33 @@ export default function App() {
           if (typeof savedSettings.hapticsEnabled === "boolean") {
             setHapticsEnabled(savedSettings.hapticsEnabled);
           }
+
+          if (typeof savedSettings.notificationsEnabled === "boolean") {
+            setNotificationsEnabled(savedSettings.notificationsEnabled);
+          }
         }
 
         await loadDailyWord();
+
+        const shouldUseNotifications =
+          savedSettings?.notificationsEnabled !== false;
+        if (mounted && shouldUseNotifications) {
+          const granted = await requestNotificationPermissions();
+          if (mounted && !granted) {
+            setNotificationsEnabled(false);
+          }
+        }
       } catch (loadError) {
         console.error("Failed to initialize app:", loadError);
         if (mounted) {
-          setActiveDate(getTodayDateKey());
-          setTarget(WORDS[0]);
-          setError("Erro ao carregar palavra do dia.");
+          const fallbackDate = getTodayDateKey();
+          const fallbackWord = getWordForDate(fallbackDate);
+          if (fallbackWord) {
+            setActiveDate(fallbackDate);
+            setTarget(fallbackWord);
+          } else {
+            setError("Erro ao carregar palavra do dia.");
+          }
         }
       } finally {
         if (mounted) {
@@ -174,11 +223,11 @@ export default function App() {
 
     AsyncStorage.setItem(
       SETTINGS_STORAGE_KEY,
-      JSON.stringify({ darkMode, hapticsEnabled }),
+      JSON.stringify({ darkMode, hapticsEnabled, notificationsEnabled }),
     ).catch((saveError) => {
       console.error("Failed to save settings:", saveError);
     });
-  }, [darkMode, hapticsEnabled, ready]);
+  }, [darkMode, hapticsEnabled, notificationsEnabled, ready]);
 
   useEffect(() => {
     if (!ready || !activeDate) {
@@ -222,9 +271,14 @@ export default function App() {
 
     if (justFinished) {
       haptics.play(won ? "win" : "loss");
+      if (notificationsEnabled) {
+        scheduleNextWordNotification().catch((notificationError) => {
+          console.error("Failed to schedule next word notification:", notificationError);
+        });
+      }
       setJustFinished(false);
     }
-  }, [gameOver, justFinished, haptics, won]);
+  }, [gameOver, justFinished, haptics, won, notificationsEnabled]);
 
   const letterStates = useMemo<LetterStates>(() => {
     const states: LetterStates = {};
@@ -279,6 +333,26 @@ export default function App() {
     setShowTutorial(true);
   });
 
+  const handleNotificationsChange = useEvent(async (value: boolean) => {
+    if (value) {
+      try {
+        const granted = await requestNotificationPermissions();
+        setNotificationsEnabled(granted);
+      } catch (notificationError) {
+        console.error("Failed to request notification permissions:", notificationError);
+        setNotificationsEnabled(false);
+      }
+      return;
+    }
+
+    setNotificationsEnabled(false);
+    try {
+      await cancelScheduledNotifications();
+    } catch (notificationError) {
+      console.error("Failed to cancel scheduled notifications:", notificationError);
+    }
+  });
+
   const handleTitleLongPress = useCallback(() => {
     setDebugMode((prev) => !prev);
   }, []);
@@ -291,13 +365,13 @@ export default function App() {
     setError(null);
 
     if (key === "ENTER") {
-      if (current.length !== WORD_LENGTH) {
+      if (currentLetters.some((letter) => !letter)) {
         triggerShake();
         setError("Complete a palavra");
         return;
       }
 
-      const normalizedGuess = normalize(current);
+      const normalizedGuess = normalize(currentLetters.join(""));
 
       if (!isValidWord(normalizedGuess, WORDS)) {
         triggerShake();
@@ -311,7 +385,8 @@ export default function App() {
         { word: normalizedGuess, eval: evaluation },
       ];
       setGuesses(newGuesses);
-      setCurrent("");
+      setCurrentLetters(createEmptyCurrentLetters());
+      setCursorPos(0);
       setFlipRowIndex(guesses.length);
 
       const isWin = normalizedGuess === target;
@@ -326,24 +401,56 @@ export default function App() {
     }
 
     if (key === "DEL") {
-      setCurrent((previous) => previous.slice(0, -1));
+      const selectedIndex =
+        cursorPos >= WORD_LENGTH ? WORD_LENGTH - 1 : cursorPos;
+      const deleteIndex =
+        currentLetters[selectedIndex] || cursorPos === 0
+          ? selectedIndex
+          : cursorPos - 1;
+
+      setCurrentLetters((previous) => {
+        const next = [...previous];
+        next[deleteIndex] = "";
+        return next;
+      });
+      setCursorPos(deleteIndex);
       return;
     }
 
-    if (current.length >= WORD_LENGTH) {
+    if (cursorPos >= WORD_LENGTH) {
       haptics.play("keyBlocked");
       return;
     }
 
     haptics.play("keyTap");
-    setCurrent((previous) => previous + key);
+    const nextLetters = [...currentLetters];
+    nextLetters[cursorPos] = key;
+
+    setCurrentLetters((previous) => {
+      const next = [...previous];
+      next[cursorPos] = key;
+      return next;
+    });
+    setCursorPos(findNextEmptyTile(nextLetters, cursorPos + 1) ?? cursorPos);
+  });
+
+  const handleTilePress = useEvent((tileIndex: number) => {
+    // Only allow in the active row
+    const activeRowIndex = guesses.length;
+    if (gameOver || activeRowIndex >= MAX_GUESSES) return;
+
+    setCursorPos(tileIndex);
   });
 
   const board = useMemo<BoardRow[]>(() => {
     const nextRows = [...guesses];
 
     if (nextRows.length < MAX_GUESSES) {
-      nextRows.push({ word: current, eval: Array(WORD_LENGTH).fill("active") });
+      nextRows.push({
+        word: currentLetters.join(""),
+        letters: currentLetters,
+        eval: Array(WORD_LENGTH).fill("active"),
+      });
     }
 
     while (nextRows.length < MAX_GUESSES) {
@@ -351,7 +458,7 @@ export default function App() {
     }
 
     return nextRows;
-  }, [current, guesses]);
+  }, [currentLetters, guesses]);
 
   if (!fontsLoaded || !ready) {
     return (
@@ -372,10 +479,16 @@ export default function App() {
       />
 
       <Animated.View style={[styles.boardWrapper, shakeStyle]} onLayout={handleBoardLayout}>
-        <Board board={board} flipRowIndex={flipRowIndex} maxHeight={boardHeight} won={won} theme={theme} />
+        <Board board={board} flipRowIndex={flipRowIndex} maxHeight={boardHeight} won={won} theme={theme} activeRowIndex={guesses.length} cursorPos={cursorPos} onTilePress={handleTilePress} />
       </Animated.View>
 
       <View style={styles.bottomArea}>
+        {gameOver && !won ? (
+          <Animated.View entering={FadeInDown.duration(500)} style={styles.gameOverHeader}>
+            <Text style={[styles.gameOverWord, { color: theme.colorError }]}>{target}</Text>
+          </Animated.View>
+        ) : null}
+
         {gameOver ? (
           <CountdownBanner
             activeDate={activeDate}
@@ -411,6 +524,8 @@ export default function App() {
         onDarkModeChange={setDarkMode}
         hapticsEnabled={hapticsEnabled}
         onHapticsChange={setHapticsEnabled}
+        notificationsEnabled={notificationsEnabled}
+        onNotificationsChange={handleNotificationsChange}
         theme={theme}
         debugMode={debugMode}
         onResetDay={handleResetDay}
