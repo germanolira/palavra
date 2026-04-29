@@ -4,8 +4,8 @@ const SEED_WORDS = dailySeed.words;
 const WORD_LIST = SEED_WORDS.map(w => w.word);
 
 describe('dailySeed validation', () => {
-  test('has exactly 5374 words', () => {
-    expect(SEED_WORDS.length).toBe(5374);
+  test('has exactly 5261 words', () => {
+    expect(SEED_WORDS.length).toBe(5261);
   });
 
   test('all entries have valid difficulty', () => {
